@@ -1,0 +1,24 @@
+# Ignore node_modules
+node_modules/
+
+# Ignore Hardhat build artifacts
+artifacts/
+cache/
+
+# Ignore environment variables
+.env
+
+# Ignore coverage reports
+coverage/
+
+# Ignore compiled contracts
+bin/
+
+# Ignore logs
+*.log
+
+# Ignore MacOS system files
+.DS_Store
+
+# Ignore Visual Studio Code settings
+.vscode/
