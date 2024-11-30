@@ -65,3 +65,32 @@
     transform: rotate(360deg);
   }
 }
+
+.bottom-buttons-container {
+  position: relative; /* Allow buttons to appear naturally above the table */
+  margin: 20px auto; /* Center the buttons horizontally */
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+
+.button {
+  padding: 10px 20px;
+  background-color: #329ba9;
+  color: #000000;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.button:hover {
+  background-color: #0d2736;
+}
+
+.button:active {
+  background-color: #0f2e41;
+}
+
