@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import logo from './eebay.svg';
 import './App.css';
-
+// Function to create Home page
 function App() {
   const [isCreateBidModalOpen, setIsCreateBidModalOpen] = useState(false);
   const [isPlaceBidModalOpen, setIsPlaceBidModalOpen] = useState(false);
