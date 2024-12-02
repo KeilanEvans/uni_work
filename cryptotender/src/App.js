@@ -90,7 +90,7 @@ function App() {
                 <input type="number" name="bidAmount" />
               </label>
               <br />
-              <button type="submit">Submit Bid</button>
+              <button type="submit" className="button">Submit Bid</button>
             </form>
           </div>
         </div>
@@ -116,7 +116,7 @@ function App() {
                 <input type="number" name="bidAmount" />
               </label>
               <br />
-              <button type="submit">Submit Bid</button>
+              <button type="submit" className="button">Submit Bid</button>
             </form>
           </div>
         </div>
