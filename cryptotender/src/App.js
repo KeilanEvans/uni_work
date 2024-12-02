@@ -1,14 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from './eebay.svg';
 import './App.css';
 
 function App() {
+  const [isCreateBidModalOpen, setIsCreateBidModalOpen] = useState(false);
+  const [isPlaceBidModalOpen, setIsPlaceBidModalOpen] = useState(false);
+
   const productsOnSale = [
     { id: 1, name: 'Laptop', price: '$999', description: 'High-performance laptop' },
     { id: 2, name: 'Phone', price: '$699', description: 'Latest model smartphone' },
     { id: 3, name: 'Headphones', price: '$199', description: 'Noise-cancelling headphones' },
     { id: 4, name: 'Watch', price: '$149', description: 'Smart watch with fitness tracking' },
   ];
+
+  const openCreateBidModal = () => {
+    setIsCreateBidModalOpen(true);
+  };
+
+  const closeCreateBidModal = () => {
+    setIsCreateBidModalOpen(false);
+  };
+
+  const openPlaceBidModal = () => {
+    setIsPlaceBidModalOpen(true);
+  };
+
+  const closePlaceBidModal = () => {
+    setIsPlaceBidModalOpen(false);
+  };
 
   return (
     <div className="App">
@@ -23,10 +42,10 @@ function App() {
 
       {/* Buttons above the table */}
       <div className="bottom-buttons-container">
-        <button className="button" onClick={() => console.log("Create Bid clicked")}>
+        <button className="button" onClick={openCreateBidModal}>
           Create Bid
         </button>
-        <button className="button" onClick={() => console.log("Place Bid clicked")}>
+        <button className="button" onClick={openPlaceBidModal}>
           Place Bid
         </button>
       </div>
@@ -50,6 +69,58 @@ function App() {
           ))}
         </tbody>
       </table>
+
+      {isCreateBidModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close" onClick={closeCreateBidModal}>&times;</span>
+            <h2>Create a Bid</h2>
+            <form>
+              <label>
+                Product:
+                <select name="product">
+                  {productsOnSale.map((product) => (
+                    <option key={product.id} value={product.name}>{product.name}</option>
+                  ))}
+                </select>
+              </label>
+              <br />
+              <label>
+                Bid Amount:
+                <input type="number" name="bidAmount" />
+              </label>
+              <br />
+              <button type="submit">Submit Bid</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isPlaceBidModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close" onClick={closePlaceBidModal}>&times;</span>
+            <h2>Place a Bid</h2>
+            <form>
+              <label>
+                Product:
+                <select name="product">
+                  {productsOnSale.map((product) => (
+                    <option key={product.id} value={product.name}>{product.name}</option>
+                  ))}
+                </select>
+              </label>
+              <br />
+              <label>
+                Bid Amount:
+                <input type="number" name="bidAmount" />
+              </label>
+              <br />
+              <button type="submit">Submit Bid</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
