@@ -133,3 +133,34 @@
   cursor: pointer;
 }
 
+.header-controls {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.welcome-message {
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Adjust gap as needed */
+  margin: 20px 0; /* Add margin for spacing */
+}
+
+.App-table {
+  width: 80%;
+  margin: 20px auto;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.App-table th, .App-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+}
