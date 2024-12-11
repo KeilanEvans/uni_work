@@ -164,3 +164,134 @@
   border: 1px solid #ddd;
   padding: 10px;
 }
+
+/* Create Tender Page Styling */
+.create-tender-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.page-title {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.tender-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-label {
+  font-size: 1rem;
+  color: #555;
+}
+
+.form-input {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.create-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.create-button:hover {
+  background-color: #218838;
+}
+
+.back-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.back-button:hover {
+  background-color: #c82333;
+}
+
+/* Vote Page Styling */
+.vote-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.vote-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.vote-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.vote-button:hover {
+  background-color: #0056b3;
+}
+
+/* Bid Page Styling */
+.bid-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.bid-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.bid-button {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.bid-button:hover {
+  background-color: #117a8b;
+}
+
+
