@@ -157,6 +157,10 @@ contract TenderContract {
         return temp;
     }
 
+    // Function to get all tenders
+    function getTenders() external view returns(Tender[] memory) {
+        return tenders;
+    }
 
     // Function to get the details of a tender
     function getTender(uint256 tenderId) external view returns (
