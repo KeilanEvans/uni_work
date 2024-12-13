@@ -35,11 +35,8 @@ function App() {
   
         // Load Tenders
         const tenderCount = await tenderContract.methods.tenderCount().call();
-        const loadedTenders = [];
-        for (let i = 0; i < tenderCount; i++) {
-          const tender = await tenderContract.methods.tenders(i).call();
-          loadedTenders.push(tender);
-        }
+        const loadedTenders = await tenderContract.methods.getTenders().call;
+        
         setTenders(loadedTenders);
   
         // Load Bids for Current User
