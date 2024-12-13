@@ -157,7 +157,9 @@ contract TenderContract {
         return temp;
     }
 
-    // Function to get all tenders
+    // Function to get all Tenders
+    // I appreciate that this is probably expensive to run and not at all scalable
+    //      but since this is not entirely a practical implementation, it'll do.
     function getTenders() external view returns(Tender[] memory) {
         return tenders;
     }
