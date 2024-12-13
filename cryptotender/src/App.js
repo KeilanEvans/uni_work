@@ -11,6 +11,7 @@ const CONTRACT_ADDRESS = "0xYourContractAddress"; // Replace with your deployed 
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [clickedRow, setClickedRow] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
   const [tenders, setTenders] = useState([]);
   const [extraDetails, setExtraDetails] = useState([]);
@@ -34,11 +35,8 @@ function App() {
   
         // Load Tenders
         const tenderCount = await tenderContract.methods.tenderCount().call();
-        const loadedTenders = [];
-        for (let i = 0; i < tenderCount; i++) {
-          const tender = await tenderContract.methods.tenders(i).call();
-          loadedTenders.push(tender);
-        }
+        const loadedTenders = await tenderContract.methods.getTenders().call;
+        
         setTenders(loadedTenders);
   
         // Load Bids for Current User
@@ -210,20 +208,27 @@ function App() {
               <textarea id="tender-description" className="form-input form-textarea"></textarea>
             </div>
             <div className="form-group">
-              <label className="form-label">Duration (in seconds):</label>
-              <input type="number" id="tender-duration" className="form-input" />
+              <label className="form-label">Close Date:</label>
+              <input type="date" id="tender-date" className="form-input" />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Close Time:</label>
+              <input type="time" id="tender-time" className="form-input" />
             </div>
             <div className="form-buttons">
               <button
                 type="button"
                 className="button create-button"
-                onClick={() =>
+                onClick={() => {
                   handleCreateTender(
                     document.getElementById("tender-name").value,
                     document.getElementById("tender-description").value,
-                    parseInt(document.getElementById("tender-duration").value)
-                  )
-                }
+                    document.getElementById("tender-date").value,
+                    document.getElementById("tender-time").value
+                  );
+                  setCurrentPage('home');
+                  setIsLoggedIn(true);
+                }}
               >
                 Create Tender
               </button>
@@ -266,7 +271,10 @@ function App() {
               <button
                 type="button"
                 className="button back-button"
-                onClick={() => setCurrentPage('home')}
+                onClick={() => {
+                  setCurrentPage('home');
+                  setIsLoggedIn(true);
+                }}
               >
                 Back to Home
               </button>
@@ -314,7 +322,10 @@ function App() {
               <button
                 type="button"
                 className="button back-button"
-                onClick={() => setCurrentPage('home')}
+                onClick={() => {
+                  setCurrentPage('home');
+                  setIsLoggedIn(true);
+                }}
               >
                 Back to Home
               </button>

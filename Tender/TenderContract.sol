@@ -135,6 +135,35 @@ contract TenderContract {
         }
     }
 
+    // Function to return the total number of tenders.
+    function tenderCount() external view returns(uint256) {
+        return tenders.length;
+    }
+
+    // Overloaded tenderCount() to return only open tenders
+    function tenderCount(bool open) external view returns(uint256) {
+        uint256 temp = 0;
+        if (open) {
+            for (uint i = 0; i < tenders.length ; i++) {
+            if (tenders[i].isOpen) {
+                temp++;
+                }
+            }
+        }
+        else {
+            return tenders.length;
+        }
+
+        return temp;
+    }
+
+    // Function to get all Tenders
+    // I appreciate that this is probably expensive to run and not at all scalable
+    //      but since this is not entirely a practical implementation, it'll do.
+    function getTenders() external view returns(Tender[] memory) {
+        return tenders;
+    }
+
     // Function to get the details of a tender
     function getTender(uint256 tenderId) external view returns (
         uint256 id, 
