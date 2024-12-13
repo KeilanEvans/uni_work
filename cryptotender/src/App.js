@@ -133,7 +133,7 @@ function App() {
     return 'Voting Ended';
   };
 
-  const handleCreateTender = async (name, description, endDate, endTime) => {
+  const handleCreateTender = async (title, description, endDate, endTime) => {
     try {
       // Create start time for tender.
       const startTimeUnix = Math.floor(new Date().getTime() / 1000);
@@ -144,13 +144,13 @@ function App() {
 
       // Add to Blockchain
       await contract.methods
-        .createTender(name, startTimeUnix, endTimeUnix, description)
+        .createTender(title, startTimeUnix, endTimeUnix, description)
         .send({ from: account });
 
       // Add to CSV
       const newTender = {
         id: tenders.length,
-        name,
+        title,
         description,
         creator: account,
         endTime: Math.floor(new Date().getTime() / 1000) + duration,
