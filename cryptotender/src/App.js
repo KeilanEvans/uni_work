@@ -58,7 +58,7 @@ function App() {
     initWeb3();
   }, []);
   
-
+  // Method to handle pre-registered user login
   const handleLogin = async () => {
     const response = await fetch('./users.csv');
     const csvData = await response.text();
@@ -81,6 +81,7 @@ function App() {
     });
   };
 
+  // Method to handle new user registration
   const handleRegister = async () => {
     const username = prompt("Choose a Username:");
     const password = prompt("Choose a Password:");
@@ -114,6 +115,7 @@ function App() {
     });
   };
 
+  // Method to calculate countdown timer value from a Tender's end date/time unix value
   const calculateTimeLeft = (endTime) => {
     const now = Math.floor(new Date().getTime() / 1000);
     const timeLeft = endTime - now;
@@ -125,6 +127,7 @@ function App() {
     return 'Voting Ended';
   };
 
+  // Method to handle users creating Tenders
   const handleCreateTender = async (title, description, endDate, endTime) => {
     try {
       // Create start time for tender.
@@ -171,6 +174,7 @@ function App() {
     }
   };
 
+  // Method for handling users voting
   const handleVote = async (tenderId) => {
     try {
       await contract.methods.vote(tenderId).send({ from: account });
@@ -180,6 +184,7 @@ function App() {
     }
   };
 
+  // Method for handling users placing bids
   const handlePlaceBid = async (tenderId, bidAmount) => {
     try {
       await contract.methods.placeBid(tenderId).send({
@@ -216,7 +221,7 @@ function App() {
     }
   };
 
-
+  // Method to control the page displayed to the user
   const renderPage = () => {
     if (currentPage === 'create-tender') {
       return (
@@ -406,6 +411,9 @@ function App() {
     }
     
     return (
+
+      // Main Page HTML 
+
       <div className="App">
         <img src={logo} className="App-logo" alt="logo" />
         <header className="App-header">
