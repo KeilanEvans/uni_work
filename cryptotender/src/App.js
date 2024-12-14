@@ -192,7 +192,7 @@ function App() {
     }
   };
   
-
+  // Method to handle users editing their bids
   const handleEditBid = async (tenderId, newBidAmount) => {
     try {
       await contract.methods.reviseBid(tenderId).send({
@@ -205,7 +205,7 @@ function App() {
     }
   };
 
-  // Method to handle which row is clicked for highlighting purposes.
+  // Method to handle which row is clicked for highlighting purposes
   const handleRowClick = (id) => {
 
     // If the clicked row is an already selected row, deselect it. (setClickedRow(null) deselects.)
