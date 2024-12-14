@@ -34,19 +34,11 @@ function App() {
         console.log("Connected to blockchain:", accounts[0]);
   
         // Load Tenders
-        const tenderCount = await tenderContract.methods.tenderCount().call();
-        const loadedTenders = await tenderContract.methods.getTenders().call;
-        
+        const loadedTenders = await tenderContract.methods.getTenders().call();
         setTenders(loadedTenders);
   
         // Load Bids for Current User
-        const userBids = {};
-        for (let i = 0; i < tenderCount; i++) {
-          const bid = await tenderContract.methods.bids(i, accounts[0]).call();
-          if (bid.exists) {
-            userBids[i] = bid;
-          }
-        }
+        const userBids = await tenderContract.methods.getBids(accounts[0]).call();
         setBids(userBids);
   
         // Load Extra Details from CSV
@@ -66,7 +58,7 @@ function App() {
     initWeb3();
   }, []);
   
-
+  // Method to handle pre-registered user login
   const handleLogin = async () => {
     const response = await fetch('./users.csv');
     const csvData = await response.text();
@@ -89,6 +81,7 @@ function App() {
     });
   };
 
+  // Method to handle new user registration
   const handleRegister = async () => {
     const username = prompt("Choose a Username:");
     const password = prompt("Choose a Password:");
@@ -122,33 +115,72 @@ function App() {
     });
   };
 
-  const calculateTimeLeft = (endTime) => {
+  // Method to calculate countdown timer value from a Tender's end date/time unix value
+  const calculateTimeLeftStr = (endTime) => {
     const now = Math.floor(new Date().getTime() / 1000);
     const timeLeft = endTime - now;
     if (timeLeft > 0) {
-      const minutes = Math.floor(timeLeft / 60);
+      const hours = Math.floor(timeLeft / 3600)
+      const minutes = Math.floor((timeLeft % 3600) / 60);
       const seconds = timeLeft % 60;
-      return `${minutes}m ${seconds}s`;
+
+      return `${
+      hours
+      .toString()
+      .padStart(2, '0')}:${
+      minutes
+      .toString()
+      .padStart(2, '0')}:${
+      seconds
+      .toString()
+      .padStart(2, '0')}`;
     }
     return 'Voting Ended';
   };
 
-  const handleCreateTender = async (name, description, duration) => {
+  const calculateTimeLeftInt = (endTime) => {
+    const now = Math.floor(new Date().getTime() / 1000);
+    const timeLeft = endTime - now;
+    return timeLeft;
+  }
+
+  // Method to handle users creating Tenders
+  const handleCreateTender = async (title, description, endDate, endTime) => {
     try {
+      // Create start time for tender.
+      const startTimeUnix = Math.floor(new Date().getTime() / 1000);
+
+      // Create end time for tender from parsed parameters.
+      const endDateTimeString = `${endDate}T${endTime}:00`;
+      const endTimeUnix = Math.floor(new Date(endDateTimeString).getTime() / 1000);
+
       // Add to Blockchain
-      await contract.methods.createTender(name, duration).send({ from: account });
+      await contract.methods
+        .createTender(title, startTimeUnix, endTimeUnix, description)
+        .send({ from: account });
 
       // Add to CSV
       const newTender = {
         id: tenders.length,
-        name,
-        description,
+        title,
         creator: account,
-        endTime: Math.floor(new Date().getTime() / 1000) + duration,
+        startTime: startTimeUnix,
+        endTime: endTimeUnix,
+        description,
+        highestBid: 0,
+        highestBidder: "0x0000000000000000000000000000000000000000",
+        isOpen: true,
+        votes: 0,
       };
+
       const updatedDetails = [...extraDetails, newTender];
       setExtraDetails(updatedDetails);
-
+      
+      // Now we need to sync our understanding of the tenders on the blockchain
+      await contract.methods.getTenders().call().then((loadedTenders) => {
+        setTenders(loadedTenders);
+      });
+      
       const updatedCSV = Papa.unparse(updatedDetails);
       const blob = new Blob([updatedCSV], { type: 'text/csv;charset=utf-8;' });
       saveAs(blob, 'tenders.csv');
@@ -159,6 +191,7 @@ function App() {
     }
   };
 
+  // Method for handling users voting
   const handleVote = async (tenderId) => {
     try {
       await contract.methods.vote(tenderId).send({ from: account });
@@ -168,6 +201,7 @@ function App() {
     }
   };
 
+  // Method for handling users placing bids
   const handlePlaceBid = async (tenderId, bidAmount) => {
     try {
       await contract.methods.placeBid(tenderId).send({
@@ -180,7 +214,7 @@ function App() {
     }
   };
   
-
+  // Method to handle users editing their bids
   const handleEditBid = async (tenderId, newBidAmount) => {
     try {
       await contract.methods.reviseBid(tenderId).send({
@@ -193,6 +227,29 @@ function App() {
     }
   };
 
+  // Method to handle which row is clicked for highlighting purposes
+  const handleRowClick = (id) => {
+
+    // If the clicked row is an already selected row, deselect it. (setClickedRow(null) deselects.)
+    if (id === clickedRow) {
+      setClickedRow(null);
+    } else {
+      setClickedRow(id);
+    }
+  };
+
+  // Method to assert if a tender is still open or closed
+  const calculateOpenStatus = (endTime) => {
+    const now = Math.floor(new Date().getTime() / 1000);
+    const timeLeft = endTime - now;
+    if (timeLeft > 0) {
+      return 'Open'
+    }
+    return 'Closed';
+    
+  }
+
+  // Method to control the page displayed to the user
   const renderPage = () => {
     if (currentPage === 'create-tender') {
       return (
@@ -201,7 +258,12 @@ function App() {
           <form className="tender-form">
             <div className="form-group">
               <label className="form-label">Tender Name:</label>
-              <input type="text" id="tender-name" className="form-input" />
+              <input 
+                type="text" 
+                id="tender-name" 
+                className="form-input"
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="form-label">Description:</label>
@@ -209,23 +271,38 @@ function App() {
             </div>
             <div className="form-group">
               <label className="form-label">Close Date:</label>
-              <input type="date" id="tender-date" className="form-input" />
+              <input 
+                type="date" 
+                id="tender-date" 
+                className="form-input"
+                required
+              />
             </div>
             <div className="form-group">
               <label className="form-label">Close Time:</label>
-              <input type="time" id="tender-time" className="form-input" />
+              <input 
+                type="time" 
+                id="tender-time" 
+                className="form-input"
+                required
+              />
             </div>
             <div className="form-buttons">
               <button
                 type="button"
                 className="button create-button"
                 onClick={() => {
-                  handleCreateTender(
-                    document.getElementById("tender-name").value,
-                    document.getElementById("tender-description").value,
-                    document.getElementById("tender-date").value,
-                    document.getElementById("tender-time").value
-                  );
+                  const name = document.getElementById("tender-name").value;
+                  const description = document.getElementById("tender-description").value;
+                  const date = document.getElementById("tender-date").value;
+                  const time = document.getElementById("tender-time").value;
+
+                  if (!name || !description || !date || !time) {
+                    alert("All fields are required.");
+                    return;
+                  }
+
+                  handleCreateTender(name, description, date, time);
                   setCurrentPage('home');
                   setIsLoggedIn(true);
                 }}
@@ -264,7 +341,17 @@ function App() {
               <button
                 type="button"
                 className="button vote-button"
-                onClick={() => handleVote(document.getElementById("vote-tender-id").value)}
+                onClick={() => {
+                  const vote = document.getElementById("vote-tender-id").value;
+
+                  if (!vote) {
+                    alert("Please select a tender to vote on!")
+                  }
+
+                  handleVote();
+                  setCurrentPage('home')
+                  setIsLoggedIn(true)
+                }}
               >
                 Submit Vote
               </button>
@@ -310,12 +397,19 @@ function App() {
               <button
                 type="button"
                 className="button bid-button"
-                onClick={() =>
-                  handlePlaceBid(
-                    document.getElementById("bid-tender-id").value,
-                    document.getElementById("bid-amount").value
-                  )
-                }
+                onClick={() => {
+                  const tenderID = document.getElementById("bid-tender-id").value;
+                  const bidValue = document.getElementById("bid-amount").value
+
+                  if (!tenderID || !bidValue) {
+                    alert("All fields are required.");
+                    return;
+                  }
+
+                  handlePlaceBid(tenderID, bidValue);
+                  setCurrentPage('home');
+                  setIsLoggedIn(true);
+                }}
               >
                 Submit Bid
               </button>
@@ -359,12 +453,19 @@ function App() {
               <button
                 type="button"
                 className="button edit-bid-button"
-                onClick={() =>
-                  handleEditBid(
-                    document.getElementById("edit-bid-tender-id").value,
-                    document.getElementById("edit-bid-amount").value
-                  )
-                }
+                onClick={() => {
+                  const tenderID = document.getElementById("edit-bid-tender-id").value;
+                  const bidValue = document.getElementById("edit-bid-amount").value
+
+                  if (!tenderID || !bidValue) {
+                    alert("All fields are required.");
+                    return;
+                  }
+
+                  handleEditBid(tenderID, bidValue);
+                  setCurrentPage('home');
+                  setIsLoggedIn(true);
+                }}
               >
                 Submit New Bid
               </button>
@@ -382,6 +483,9 @@ function App() {
     }
     
     return (
+
+      // Main Page HTML 
+
       <div className="App">
         <img src={logo} className="App-logo" alt="logo" />
         <header className="App-header">
@@ -408,6 +512,7 @@ function App() {
               <th>Name</th>
               <th>Description</th>
               <th>Votes</th>
+              <th>Open Status</th>
               <th>Time Left</th>
             </tr>
           </thead>
@@ -415,12 +520,23 @@ function App() {
             {tenders.map((tender, index) => {
               const details = extraDetails.find((d) => d.id == tender.id) || {};
               return (
-                <tr key={index}>
+                <tr 
+                  key={index}
+                  className={clickedRow === tender.id ? 'Clicked-row' : ''}
+                  onClick={() => handleRowClick(tender.id)}
+                >
                   <td>{tender.id}</td>
                   <td>{tender.name}</td>
                   <td>{details.description || 'N/A'}</td>
                   <td>{tender.votes}</td>
-                  <td>{calculateTimeLeft(tender.endTime)}</td>
+                  <td>{calculateOpenStatus(tender.endTime)}</td>
+                  <td
+                    className={
+                      calculateTimeLeftInt(tender.endTime) < 3600
+                      ? 'Closing-bidding'
+                      : 'Open-bidding'
+                    }
+                  >{calculateTimeLeftStr(tender.endTime)}</td>
                 </tr>
               );
             })}

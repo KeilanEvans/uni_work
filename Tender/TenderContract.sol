@@ -6,9 +6,11 @@ contract TenderContract {
     // Struct to store details of a Tender
     struct Tender {
         uint256 id;                // Unique ID of the tender
+        string title;
         address creator;           // Address of the tender creator
         uint256 startTime;         // Start time of the tender
         uint256 endTime;           // End time of the tender
+        string description;
         uint256 highestBid;        // Highest bid amount received for the tender
         address highestBidder;     // Address of the highest bidder
         bool isOpen;               // Status of the tender (open or closed)
@@ -63,14 +65,16 @@ contract TenderContract {
     }
 
     // Function to create a new tender (only registered users can create tenders)
-    function createTender(uint256 startTime, uint256 endTime) external onlyRegisteredUser {
+    function createTender(string title, uint256 startTime, uint256 endTime, string description) external onlyRegisteredUser {
         require(startTime < endTime, "Start time must be earlier than end time.");
         uint256 tenderId = tenders.length;
         tenders.push(Tender({
             id: tenderId,
+            title: title,
             creator: msg.sender,
             startTime: startTime,
             endTime: endTime,
+            description: description,
             highestBid: 0,
             highestBidder: address(0),
             isOpen: true,
@@ -164,12 +168,40 @@ contract TenderContract {
         return tenders;
     }
 
+    // Function to get all TenderIDs a user has bid on
+    function getBids(address account) external view returns(Tender[] memory) {
+        uint256 count = 0;
+
+        // Count how many bids exist for the account
+        for (uint256 i = 0; i < tenders.length; i++) {
+            if (bids[i][account].exists) {
+                count++;
+            }
+        }
+
+        // Create an array of the appropriate size
+        uint256[] memory temp = new uint256[](count);
+        uint256 index = 0;
+
+        // Add tenderIDs to the array
+        for (uint256 i = 0; i < tenders.length; i++) {
+            if (bids[i][account].exists) {
+                temp[index] = i; // Add the tenderID
+                index++;
+            }
+        }
+
+        return temp;
+    }
+
     // Function to get the details of a tender
     function getTender(uint256 tenderId) external view returns (
         uint256 id, 
+        string title,
         address creator, 
         uint256 startTime, 
         uint256 endTime, 
+        string description,
         uint256 highestBid, 
         address highestBidder, 
         bool isOpen,
@@ -178,9 +210,11 @@ contract TenderContract {
         Tender storage tender = tenders[tenderId];
         return (
             tender.id,
+            tender.title,
             tender.creator,
             tender.startTime,
             tender.endTime,
+            tender.description,
             tender.highestBid,
             tender.highestBidder,
             tender.isOpen,
