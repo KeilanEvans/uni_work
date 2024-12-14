@@ -450,7 +450,7 @@ function App() {
                 <tr 
                   key={index}
                   className={clickedRow === tender.id ? 'Clicked-row' : ''}
-                  onClick={() => handleRowClick(product.id)}
+                  onClick={() => handleRowClick(tender.id)}
                 >
                   <td>{tender.id}</td>
                   <td>{tender.name}</td>
