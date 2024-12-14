@@ -205,6 +205,18 @@ function App() {
     }
   };
 
+  // Method to handle which row is clicked for highlighting purposes.
+  const handleRowClick = (id) => {
+
+    // If the clicked row is an already selected row, deselect it. (setClickedRow(null) deselects.)
+    if (id === clickedRow) {
+      setClickedRow(null);
+    } else {
+      setClickedRow(id);
+    }
+  };
+
+
   const renderPage = () => {
     if (currentPage === 'create-tender') {
       return (
@@ -427,7 +439,11 @@ function App() {
             {tenders.map((tender, index) => {
               const details = extraDetails.find((d) => d.id == tender.id) || {};
               return (
-                <tr key={index}>
+                <tr 
+                  key={index}
+                  className={clickedRow === tender.id ? 'Clicked-row' : ''}
+                  onClick={() => handleRowClick(product.id)}
+                >
                   <td>{tender.id}</td>
                   <td>{tender.name}</td>
                   <td>{details.description || 'N/A'}</td>
