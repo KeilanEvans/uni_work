@@ -221,6 +221,17 @@ function App() {
     }
   };
 
+  // Method to assert if a tender is still open or closed
+  const calculateOpenStatus = (endTime) => {
+    const now = Math.floor(new Date().getTime() / 1000);
+    const timeLeft = endTime - now;
+    if (timeLeft > 0) {
+      return 'Open'
+    }
+    return 'Closed';
+    
+  }
+
   // Method to control the page displayed to the user
   const renderPage = () => {
     if (currentPage === 'create-tender') {
@@ -440,6 +451,7 @@ function App() {
               <th>Name</th>
               <th>Description</th>
               <th>Votes</th>
+              <th>Open Status</th>
               <th>Time Left</th>
             </tr>
           </thead>
@@ -456,6 +468,7 @@ function App() {
                   <td>{tender.name}</td>
                   <td>{details.description || 'N/A'}</td>
                   <td>{tender.votes}</td>
+                  <td>{calculateOpenStatus(tender.endTime)}</td>
                   <td>{calculateTimeLeft(tender.endTime)}</td>
                 </tr>
               );
