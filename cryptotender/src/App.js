@@ -258,7 +258,12 @@ function App() {
           <form className="tender-form">
             <div className="form-group">
               <label className="form-label">Tender Name:</label>
-              <input type="text" id="tender-name" className="form-input" />
+              <input 
+                type="text" 
+                id="tender-name" 
+                className="form-input"
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="form-label">Description:</label>
@@ -266,23 +271,38 @@ function App() {
             </div>
             <div className="form-group">
               <label className="form-label">Close Date:</label>
-              <input type="date" id="tender-date" className="form-input" />
+              <input 
+                type="date" 
+                id="tender-date" 
+                className="form-input"
+                required
+              />
             </div>
             <div className="form-group">
               <label className="form-label">Close Time:</label>
-              <input type="time" id="tender-time" className="form-input" />
+              <input 
+                type="time" 
+                id="tender-time" 
+                className="form-input"
+                required
+              />
             </div>
             <div className="form-buttons">
               <button
                 type="button"
                 className="button create-button"
                 onClick={() => {
-                  handleCreateTender(
-                    document.getElementById("tender-name").value,
-                    document.getElementById("tender-description").value,
-                    document.getElementById("tender-date").value,
-                    document.getElementById("tender-time").value
-                  );
+                  const name = document.getElementById("tender-name").value;
+                  const description = document.getElementById("tender-description").value;
+                  const date = document.getElementById("tender-date").value;
+                  const time = document.getElementById("tender-time").value;
+
+                  if (!name || !description || !date || !time) {
+                    alert("All fields are required.");
+                    return;
+                  }
+
+                  handleCreateTender(name, description, date, time);
                   setCurrentPage('home');
                   setIsLoggedIn(true);
                 }}
@@ -321,7 +341,17 @@ function App() {
               <button
                 type="button"
                 className="button vote-button"
-                onClick={() => handleVote(document.getElementById("vote-tender-id").value)}
+                onClick={() => {
+                  const vote = document.getElementById("vote-tender-id").value;
+
+                  if (!vote) {
+                    alert("Please select a tender to vote on!")
+                  }
+
+                  handleVote();
+                  setCurrentPage('home')
+                  setIsLoggedIn(true)
+                }}
               >
                 Submit Vote
               </button>
@@ -367,12 +397,19 @@ function App() {
               <button
                 type="button"
                 className="button bid-button"
-                onClick={() =>
-                  handlePlaceBid(
-                    document.getElementById("bid-tender-id").value,
-                    document.getElementById("bid-amount").value
-                  )
-                }
+                onClick={() => {
+                  const tenderID = document.getElementById("bid-tender-id").value;
+                  const bidValue = document.getElementById("bid-amount").value
+
+                  if (!tenderID || !bidValue) {
+                    alert("All fields are required.");
+                    return;
+                  }
+
+                  handlePlaceBid(tenderID, bidValue);
+                  setCurrentPage('home');
+                  setIsLoggedIn(true);
+                }}
               >
                 Submit Bid
               </button>
@@ -416,12 +453,19 @@ function App() {
               <button
                 type="button"
                 className="button edit-bid-button"
-                onClick={() =>
-                  handleEditBid(
-                    document.getElementById("edit-bid-tender-id").value,
-                    document.getElementById("edit-bid-amount").value
-                  )
-                }
+                onClick={() => {
+                  const tenderID = document.getElementById("edit-bid-tender-id").value;
+                  const bidValue = document.getElementById("edit-bid-amount").value
+
+                  if (!tenderID || !bidValue) {
+                    alert("All fields are required.");
+                    return;
+                  }
+
+                  handleEditBid(tenderID, bidValue);
+                  setCurrentPage('home');
+                  setIsLoggedIn(true);
+                }}
               >
                 Submit New Bid
               </button>
