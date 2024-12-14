@@ -116,16 +116,33 @@ function App() {
   };
 
   // Method to calculate countdown timer value from a Tender's end date/time unix value
-  const calculateTimeLeft = (endTime) => {
+  const calculateTimeLeftStr = (endTime) => {
     const now = Math.floor(new Date().getTime() / 1000);
     const timeLeft = endTime - now;
     if (timeLeft > 0) {
-      const minutes = Math.floor(timeLeft / 60);
+      const hours = Math.floor(timeLeft / 3600)
+      const minutes = Math.floor((timeLeft % 3600) / 60);
       const seconds = timeLeft % 60;
-      return `${minutes}m ${seconds}s`;
+
+      return `${
+      hours
+      .toString()
+      .padStart(2, '0')}:${
+      minutes
+      .toString()
+      .padStart(2, '0')}:${
+      seconds
+      .toString()
+      .padStart(2, '0')}`;
     }
     return 'Voting Ended';
   };
+
+  const calculateTimeLeftInt = (endTime) => {
+    const now = Math.floor(new Date().getTime() / 1000);
+    const timeLeft = endTime - now;
+    return timeLeft;
+  }
 
   // Method to handle users creating Tenders
   const handleCreateTender = async (title, description, endDate, endTime) => {
@@ -469,7 +486,13 @@ function App() {
                   <td>{details.description || 'N/A'}</td>
                   <td>{tender.votes}</td>
                   <td>{calculateOpenStatus(tender.endTime)}</td>
-                  <td>{calculateTimeLeft(tender.endTime)}</td>
+                  <td
+                    className={
+                      calculateTimeLeftInt(tender.endTime) < 3600
+                      ? 'Closing-bidding'
+                      : 'Open-bidding'
+                    }
+                  >{calculateTimeLeftStr(tender.endTime)}</td>
                 </tr>
               );
             })}
