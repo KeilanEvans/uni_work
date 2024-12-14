@@ -34,19 +34,11 @@ function App() {
         console.log("Connected to blockchain:", accounts[0]);
   
         // Load Tenders
-        const tenderCount = await tenderContract.methods.tenderCount().call();
-        const loadedTenders = await tenderContract.methods.getTenders().call;
-        
+        const loadedTenders = await tenderContract.methods.getTenders().call();
         setTenders(loadedTenders);
   
         // Load Bids for Current User
-        const userBids = {};
-        for (let i = 0; i < tenderCount; i++) {
-          const bid = await tenderContract.methods.bids(i, accounts[0]).call();
-          if (bid.exists) {
-            userBids[i] = bid;
-          }
-        }
+        const userBids = await tenderContract.methods.getBids(accounts[0]).call();
         setBids(userBids);
   
         // Load Extra Details from CSV
@@ -151,14 +143,24 @@ function App() {
       const newTender = {
         id: tenders.length,
         title,
-        description,
         creator: account,
-        endTime: Math.floor(new Date().getTime() / 1000) + duration,
+        startTime: startTimeUnix,
+        endTime: endTimeUnix,
+        description,
+        highestBid: 0,
+        highestBidder: "0x0000000000000000000000000000000000000000",
+        isOpen: true,
+        votes: 0,
       };
 
       const updatedDetails = [...extraDetails, newTender];
       setExtraDetails(updatedDetails);
-
+      
+      // Now we need to sync our understanding of the tenders on the blockchain
+      await contract.methods.getTenders().call().then((loadedTenders) => {
+        setTenders(loadedTenders);
+      });
+      
       const updatedCSV = Papa.unparse(updatedDetails);
       const blob = new Blob([updatedCSV], { type: 'text/csv;charset=utf-8;' });
       saveAs(blob, 'tenders.csv');
