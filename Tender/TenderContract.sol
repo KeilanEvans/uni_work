@@ -168,6 +168,32 @@ contract TenderContract {
         return tenders;
     }
 
+    // Function to get all TenderIDs a user has bid on
+    function getBids(address account) external view returns(Tender[] memory) {
+        uint256 count = 0;
+
+        // First pass: Count how many bids exist for the account
+        for (uint256 i = 0; i < tenders.length; i++) {
+            if (bids[i][account].exists) {
+                count++;
+            }
+        }
+
+        // Create an array of the appropriate size
+        uint256[] memory temp = new uint256[](count);
+        uint256 index = 0;
+
+        // Second pass: Add tenderIDs to the array
+        for (uint256 i = 0; i < tenders.length; i++) {
+            if (bids[i][account].exists) {
+                temp[index] = i; // Add the tenderID
+                index++;
+            }
+        }
+
+        return temp;
+    }
+
     // Function to get the details of a tender
     function getTender(uint256 tenderId) external view returns (
         uint256 id, 
