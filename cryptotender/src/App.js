@@ -14,9 +14,9 @@ function App() {
   const [clickedRow, setClickedRow] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
   const [tenders, setTenders] = useState([]);
+  const [contract, setContract] = useState(null);
   const [extraDetails, setExtraDetails] = useState([]);
   const [web3, setWeb3] = useState(null);
-  const [contract, setContract] = useState(null);
   const [account, setAccount] = useState("");
   const [bids, setBids] = useState({});
 
@@ -25,7 +25,24 @@ function App() {
   useEffect(() => { 
     initWeb3();
     connectWallet();
+    getTenders();
   }, []); 
+
+  const getTenders = async() => {
+    if (!contract) {
+      console.error("Contract not initialized!");
+      return [];
+    }
+
+    try {
+      const tenders = await contract.methods.getTenders().call();
+      console.log("Fetched tenders:", tenders);
+      return tenders;
+    } catch (error) {
+      console.error("Error fetching tenders:", error);
+      return [];
+    }
+  }
 
   const connectWallet = async () => {
     if (isRequestPending) {
@@ -75,23 +92,19 @@ function App() {
 
       console.log("Connected to blockchain:", accounts[0]);
 
+      if (!tenderContract) {
+        throw new Error("Contract not initialised properly!")
+      }
+
       // Load Tenders
-      const loadedTenders = await tenderContract.methods.getTenders().call();
+      const loadedTenders = await getTenders();
+      console.log(loadedTenders);
       setTenders(loadedTenders);
 
       // Load Bids for Current User
       const userBids = await tenderContract.methods.getBids(accounts[0]).call();
       setBids(userBids);
 
-      // Load Extra Details from CSV
-      fetch('./tenders.csv')
-        .then(response => response.text())
-        .then(csvData => {
-          Papa.parse(csvData, {
-            header: true,
-            complete: (result) => setExtraDetails(result.data),
-          });
-        });
     } catch (error) {
       console.error("Error connecting to Web3:", error);
     }
@@ -158,12 +171,16 @@ function App() {
 
   // Method to calculate countdown timer value from a Tender's end date/time unix value
   const calculateTimeLeftStr = (endTime) => {
-    const now = Math.floor(new Date().getTime() / 1000);
+    // eslint-disable-next-line no-undef
+    const now = BigInt(Math.floor(new Date().getTime() / 1000));
     const timeLeft = endTime - now;
     if (timeLeft > 0) {
-      const hours = Math.floor(timeLeft / 3600)
-      const minutes = Math.floor((timeLeft % 3600) / 60);
-      const seconds = timeLeft % 60;
+      // eslint-disable-next-line no-undef
+      const hours = timeLeft / BigInt(3600)
+      // eslint-disable-next-line no-undef
+      const minutes = (timeLeft % BigInt(3600)) / BigInt(60);
+      // eslint-disable-next-line no-undef
+      const seconds = timeLeft % BigInt(60);
 
       return `${
       hours
@@ -180,7 +197,8 @@ function App() {
   };
 
   const calculateTimeLeftInt = (endTime) => {
-    const now = Math.floor(new Date().getTime() / 1000);
+    // eslint-disable-next-line no-undef
+    const now = BigInt(Math.floor(new Date().getTime() / 1000));
     const timeLeft = endTime - now;
     return timeLeft;
   }
@@ -199,32 +217,15 @@ function App() {
       await contract.methods
         .createTender(title, startTimeUnix, endTimeUnix, description)
         .send({ from: account });
-
-      // Add to CSV
-      const newTender = {
-        id: tenders.length,
-        title,
-        creator: account,
-        startTime: startTimeUnix,
-        endTime: endTimeUnix,
-        description,
-        highestBid: 0,
-        highestBidder: "0x0000000000000000000000000000000000000000",
-        isOpen: true,
-        votes: 0,
-      };
-
-      const updatedDetails = [...extraDetails, newTender];
-      setExtraDetails(updatedDetails);
       
       // Now we need to sync our understanding of the tenders on the blockchain
       await contract.methods.getTenders().call().then((loadedTenders) => {
         setTenders(loadedTenders);
       });
       
-      const updatedCSV = Papa.unparse(updatedDetails);
-      const blob = new Blob([updatedCSV], { type: 'text/csv;charset=utf-8;' });
-      saveAs(blob, 'tenders.csv');
+      //const updatedCSV = Papa.unparse(updatedDetails);
+      //const blob = new Blob([updatedCSV], { type: 'text/csv;charset=utf-8;' });
+      //saveAs(blob, 'tenders.csv');
 
       alert("Tender Created Successfully");
     } catch (error) {
@@ -281,9 +282,11 @@ function App() {
 
   // Method to assert if a tender is still open or closed
   const calculateOpenStatus = (endTime) => {
-    const now = Math.floor(new Date().getTime() / 1000);
+    // eslint-disable-next-line no-undef
+    const now = BigInt(Math.floor(new Date().getTime() / 1000));
     const timeLeft = endTime - now;
-    if (timeLeft > 0) {
+    // eslint-disable-next-line no-undef
+    if (timeLeft > BigInt(0)) {
       return 'Open'
     }
     return 'Closed';
