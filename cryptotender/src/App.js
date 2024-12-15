@@ -23,6 +23,20 @@ function App() {
   useEffect(() => {
     const initWeb3 = async () => {
       try {
+        
+        if (window.ethereum) {
+          provider = window.ethereum;
+          await window.ethereum.request({ method: 'eth_requestAccounts' }); // Request access to MetaMask
+          console.log("Using MetaMask provider.");
+        } else if (Web3.givenProvider) {
+          provider = Web3.givenProvider;
+          console.log("Using Web3 provider.");
+        } else {
+          // Fallback to local node
+          provider = "http://localhost:8545";
+          console.warn("No provider found. Falling back to localhost:8545");
+        }
+
         const web3Instance = new Web3(Web3.givenProvider || "http://localhost:8545");
         const accounts = await web3Instance.eth.requestAccounts();
         const tenderContract = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
