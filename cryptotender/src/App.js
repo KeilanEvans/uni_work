@@ -6,7 +6,7 @@ import './App.css';
 import logo from './Welsh_Government_logo.svg';
 import abi from './abi.json';
 
-const CONTRACT_ABI = abi;//TenderContractABI;
+const CONTRACT_ABI = abi;
 const CONTRACT_ADDRESS = "0x51fB4A37129a60C78b2976ccFee7aB83aC51eb40";
 
 function App() {
@@ -21,42 +21,42 @@ function App() {
   const [bids, setBids] = useState({});
 
   useEffect(() => {
-    const initWeb3 = async () => {
-      try {
-        const web3Instance = new Web3(Web3.givenProvider || "http://localhost:8545");
-        const accounts = await web3Instance.eth.requestAccounts();
-        const tenderContract = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-  
-        setWeb3(web3Instance);
-        setAccount(accounts[0]);
-        setContract(tenderContract);
-  
-        console.log("Connected to blockchain:", accounts[0]);
-  
-        // Load Tenders
-        const loadedTenders = await tenderContract.methods.getTenders().call();
-        setTenders(loadedTenders);
-  
-        // Load Bids for Current User
-        const userBids = await tenderContract.methods.getBids(accounts[0]).call();
-        setBids(userBids);
-  
-        // Load Extra Details from CSV
-        fetch('./tenders.csv')
-          .then(response => response.text())
-          .then(csvData => {
-            Papa.parse(csvData, {
-              header: true,
-              complete: (result) => setExtraDetails(result.data),
-            });
-          });
-      } catch (error) {
-        console.error("Error connecting to Web3:", error);
-      }
-    };
-  
     initWeb3();
   }, []);
+
+  const initWeb3 = async () => {
+    try {
+      let provider;
+
+      // Check if MetaMask or a Web3 provider is available
+      if (window.ethereum) {
+        provider = window.ethereum;
+        await window.ethereum.request({ method: 'eth_requestAccounts' }); // Request access to MetaMask
+        console.log("Using MetaMask provider.");
+      } else if (Web3.givenProvider) {
+        provider = Web3.givenProvider;
+        console.log("Using Web3 provider.");
+      } else {
+        // Fallback to local node
+        provider = "http://localhost:8545";
+        console.warn("No provider found. Falling back to localhost:8545");
+      }
+      
+      const web3Instance = new Web3(Web3.givenProvider || "http://localhost:8545");
+      const accounts = await web3Instance.eth.requestAccounts();
+      const tenderContract = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+      setWeb3(web3Instance);
+      setAccount(accounts[0]);
+      setContract(tenderContract);
+
+      console.log("Web3 Initialized:", web3Instance);
+      console.log("Contract Loaded:", tenderContract);
+      console.log("Account Connected:", accounts[0]);
+    } catch (error) {
+      console.error("Web3 Initialization Failed:", error);
+    }
+  };
   
   // Method to handle pre-registered user login
   const handleLogin = async () => {
