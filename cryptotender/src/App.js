@@ -4,10 +4,10 @@ import Papa from 'papaparse'; // For parsing CSV
 import { saveAs } from 'file-saver'; // For downloading CSV
 import './App.css';
 import logo from './eebay.svg';
+import abi from './abi.json';
 
-// Replace with your contract ABI and address
-const CONTRACT_ABI = [/* Your ABI Here */];
-const CONTRACT_ADDRESS = "0xYourContractAddress"; // Replace with your deployed contract address
+const CONTRACT_ABI = abi;//TenderContractABI;
+const CONTRACT_ADDRESS = "0x51fB4A37129a60C78b2976ccFee7aB83aC51eb40";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
