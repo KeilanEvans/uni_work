@@ -23,7 +23,8 @@ function App() {
   useEffect(() => {
     const initWeb3 = async () => {
       try {
-        
+        let provider;
+
         if (window.ethereum) {
           provider = window.ethereum;
           await window.ethereum.request({ method: 'eth_requestAccounts' }); // Request access to MetaMask
