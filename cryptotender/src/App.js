@@ -3,10 +3,10 @@ import Web3 from 'web3';
 import Papa from 'papaparse'; // For parsing CSV
 import { saveAs } from 'file-saver'; // For downloading CSV
 import './App.css';
-import logo from './eebay.svg';
+import logo from './Welsh_Government_logo.svg';
 
 // Replace with your contract ABI and address
-const CONTRACT_ABI = [/* Your ABI Here */];
+const CONTRACT_ABI = [	];
 const CONTRACT_ADDRESS = "0xYourContractAddress"; // Replace with your deployed contract address
 
 function App() {
@@ -489,7 +489,7 @@ function App() {
       <div className="App">
         <img src={logo} className="App-logo" alt="logo" />
         <header className="App-header">
-          <p>Welcome to e-Ebay!</p>
+          <p>Welcome to the Welsh Government Community Voting innitative !</p>
           {isLoggedIn ? (
             <div className="button-container">
               <button className="button" onClick={() => setCurrentPage('create-tender')}>Create Tender</button>
