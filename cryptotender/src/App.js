@@ -20,59 +20,85 @@ function App() {
   const [account, setAccount] = useState("");
   const [bids, setBids] = useState({});
 
-  useEffect(() => {
-    const initWeb3 = async () => {
-      try {
-        let provider;
+  let isRequestPending = false;
 
-        if (window.ethereum) {
-          provider = window.ethereum;
-          await window.ethereum.request({ method: 'eth_requestAccounts' }); // Request access to MetaMask
-          console.log("Using MetaMask provider.");
-        } else if (Web3.givenProvider) {
-          provider = Web3.givenProvider;
-          console.log("Using Web3 provider.");
-        } else {
-          // Fallback to local node
-          provider = "http://localhost:8545";
-          console.warn("No provider found. Falling back to localhost:8545");
-        }
-
-        const web3Instance = new Web3(Web3.givenProvider || "http://localhost:8545");
-        const accounts = await web3Instance.eth.requestAccounts();
-        const tenderContract = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-  
-        setWeb3(web3Instance);
-        setAccount(accounts[0]);
-        setContract(tenderContract);
-  
-        console.log("Connected to blockchain:", accounts[0]);
-  
-        // Load Tenders
-        const loadedTenders = await tenderContract.methods.getTenders().call();
-        setTenders(loadedTenders);
-  
-        // Load Bids for Current User
-        const userBids = await tenderContract.methods.getBids(accounts[0]).call();
-        setBids(userBids);
-  
-        // Load Extra Details from CSV
-        fetch('./tenders.csv')
-          .then(response => response.text())
-          .then(csvData => {
-            Papa.parse(csvData, {
-              header: true,
-              complete: (result) => setExtraDetails(result.data),
-            });
-          });
-      } catch (error) {
-        console.error("Error connecting to Web3:", error);
-      }
-    };
-  
+  useEffect(() => { 
     initWeb3();
-  }, []);
+    connectWallet();
+  }, []); 
+
+  const connectWallet = async () => {
+    if (isRequestPending) {
+      console.log("Request already pending...");
+      return;
+    }
+
+    try {
+      isRequestPending = true;
+
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+
+      console.log("Wallet connected:", accounts[0]);
+    } catch (error) {
+      console.error("Failed to connect wallet:", error);
+    } finally {
+      isRequestPending = false;
+    }
+  };
   
+  const initWeb3 = async () => {
+    try {
+      let provider;
+
+      if (window.ethereum) {
+        provider = window.ethereum;
+        await window.ethereum.request({ method: 'eth_requestAccounts' }); // Request access to MetaMask
+        console.log("Using MetaMask provider.");
+      } else if (Web3.givenProvider) {
+        provider = Web3.givenProvider;
+        console.log("Using Web3 provider.");
+      } else {
+        // Fallback to local node
+        provider = "http://localhost:8545";
+        console.warn("No provider found. Falling back to localhost:8545");
+      }
+
+      const web3Instance = new Web3(provider);
+      const accounts = await web3Instance.eth.requestAccounts();
+      const tenderContract = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+      setWeb3(web3Instance);
+      setAccount(accounts[0]);
+      setContract(tenderContract);
+
+      console.log("Connected to blockchain:", accounts[0]);
+
+      // Load Tenders
+      const loadedTenders = await tenderContract.methods.getTenders().call();
+      setTenders(loadedTenders);
+
+      // Load Bids for Current User
+      const userBids = await tenderContract.methods.getBids(accounts[0]).call();
+      setBids(userBids);
+
+      // Load Extra Details from CSV
+      fetch('./tenders.csv')
+        .then(response => response.text())
+        .then(csvData => {
+          Papa.parse(csvData, {
+            header: true,
+            complete: (result) => setExtraDetails(result.data),
+          });
+        });
+    } catch (error) {
+      console.error("Error connecting to Web3:", error);
+    }
+  };
+
+
+
   // Method to handle pre-registered user login
   const handleLogin = async () => {
     const response = await fetch('./users.csv');
