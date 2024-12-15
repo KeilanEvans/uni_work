@@ -7,7 +7,7 @@ import logo from './Welsh_Government_logo.svg';
 import abi from './abi.json';
 
 const CONTRACT_ABI = abi;//TenderContractABI;
-const CONTRACT_ADDRESS = "0x51fB4A37129a60C78b2976ccFee7aB83aC51eb40";
+const CONTRACT_ADDRESS = "0xdc5899a331817b3c9f122dd745447528968eeb6d";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
