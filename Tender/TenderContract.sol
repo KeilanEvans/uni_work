@@ -65,7 +65,7 @@ contract TenderContract {
     }
 
     // Function to create a new tender (only registered users can create tenders)
-    function createTender(string title, uint256 startTime, uint256 endTime, string description) external onlyRegisteredUser {
+    function createTender(string memory title, uint256 startTime, uint256 endTime, string memory description) external onlyRegisteredUser {
         require(startTime < endTime, "Start time must be earlier than end time.");
         uint256 tenderId = tenders.length;
         tenders.push(Tender({
@@ -145,63 +145,60 @@ contract TenderContract {
     }
 
     // Overloaded tenderCount() to return only open tenders
-    function tenderCount(bool open) external view returns(uint256) {
-        uint256 temp = 0;
-        if (open) {
-            for (uint i = 0; i < tenders.length ; i++) {
+function tenderCount(bool open) external view returns (uint256) {
+    uint256 temp = 0;
+    if (open) {
+        for (uint256 i = 0; i < tenders.length; i++) {
             if (tenders[i].isOpen) {
                 temp++;
-                }
             }
         }
-        else {
-            return tenders.length;
-        }
-
-        return temp;
+    } else {
+        return tenders.length;
     }
 
-    // Function to get all Tenders
-    // I appreciate that this is probably expensive to run and not at all scalable
-    //      but since this is not entirely a practical implementation, it'll do.
-    function getTenders() external view returns(Tender[] memory) {
-        return tenders;
+    return temp;
+}
+
+// Function to get all Tenders
+function getTenders() external view returns (Tender[] memory) {
+    return tenders;
+}
+
+// Function to get all TenderIDs a user has bid on
+function getBids(address account) external view returns (uint256[] memory) {
+    uint256 count = 0;
+
+    // Count how many bids exist for the account
+    for (uint256 i = 0; i < tenders.length; i++) {
+        if (bids[i][account].exists) {
+            count++;
+        }
     }
 
-    // Function to get all TenderIDs a user has bid on
-    function getBids(address account) external view returns(Tender[] memory) {
-        uint256 count = 0;
+    // Create an array of the appropriate size
+    uint256[] memory temp = new uint256[](count);
+    uint256 index = 0;
 
-        // Count how many bids exist for the account
-        for (uint256 i = 0; i < tenders.length; i++) {
-            if (bids[i][account].exists) {
-                count++;
-            }
+    // Add tenderIDs to the array
+    for (uint256 i = 0; i < tenders.length; i++) {
+        if (bids[i][account].exists) {
+            temp[index] = i; // Add the tenderID
+            index++;
         }
-
-        // Create an array of the appropriate size
-        uint256[] memory temp = new uint256[](count);
-        uint256 index = 0;
-
-        // Add tenderIDs to the array
-        for (uint256 i = 0; i < tenders.length; i++) {
-            if (bids[i][account].exists) {
-                temp[index] = i; // Add the tenderID
-                index++;
-            }
-        }
-
-        return temp;
     }
+
+    return temp;
+}
 
     // Function to get the details of a tender
     function getTender(uint256 tenderId) external view returns (
         uint256 id, 
-        string title,
+        string memory title,
         address creator, 
         uint256 startTime, 
         uint256 endTime, 
-        string description,
+        string memory description,
         uint256 highestBid, 
         address highestBidder, 
         bool isOpen,
