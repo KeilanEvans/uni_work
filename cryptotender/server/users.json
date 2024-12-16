@@ -3,5 +3,16 @@
     "username": "Keilan",
     "password": "$2b$10$PmX1sPyGdeUC1YfwcwjdZuw8485Y1x6P41iz3cQxksOE6/tVgyjLy",
     "address": "0xc9fdbe9a792C8FAfbc652032c145a6F78D299E3C"
+  },
+  {
+    "username": "blyddwyn",
+    "password": "$2b$10$XaZ23JFtwWPPYwIxDECFouksvdCQ0xJe.wjZ9rinLIWzleTtwIz3O",
+    "address": "0x3f411bF2C39C1342230B6317f0f9E20BbCB4b174"
+  },
+  {
+    "username": "Alex",
+    "password": "$2b$10$WszzPQ1No0Vln0eKAH151u42qrP0zmpCOmHnwrH/z/hAFVevVpLAG",
+    "address": "0x97d4FD146db534812f6cD23F849D24Aa4BABFf46"
   }
+
 ]

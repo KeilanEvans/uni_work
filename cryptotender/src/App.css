@@ -46,6 +46,9 @@ h1 {
   align-items: center;
 }
 
+.App-table-title {
+  color: white;
+}
 .App-table {
   width: 80%;
   margin: 20px auto;
