@@ -29,12 +29,15 @@ function App() {
   const [bids, setBids] = useState({});
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(null); // null, 'register', or 'login'
-  const [currentTime, setCurrentTime] = useState(Date.now());
 
-  useEffect(() => { 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+    }
     initWeb3(setWeb3, setAccount, setContract, setLoading, setTenders, setBids);
     connectWallet();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     if (contract) {
@@ -44,13 +47,28 @@ function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTime(Date.now());
+      // Update the component to trigger re-render
     }, 1000);
     return () => clearInterval(interval);
-  }, [])
+  }, []);
+
+  const onVote = async (contract, account, tenderId) => {
+    try {
+      await handleVote(contract, account, tenderId);
+      await getTenders(contract, setLoading, setTenders);
+    } catch (error) {
+      console.error("Error voting:", error.message || error.toString());
+    }
+  }
 
   const handleFormClose = () => {
     setShowForm(null);
+  };
+
+  const handleLogoutClick = () => {
+    handleLogout(setIsLoggedIn);
+    localStorage.removeItem('token');
+    handleFormClose();
   };
 
   return (
@@ -64,7 +82,7 @@ function App() {
             <li><button className="button" onClick={() => setCurrentPage('vote')}>Vote</button></li>
             <li><button className="button" onClick={() => setCurrentPage('bids')}>Bids</button></li>
             <li><button className="button" onClick={() => setCurrentPage('edit-bid')}>Edit Bids</button></li>
-            <li><button className="button" onClick={() => { handleLogout(setIsLoggedIn); handleFormClose(); }}>Log Out</button></li>
+            <li><button className="button" onClick={handleLogoutClick}>Log Out</button></li>
           </ul>
         ) : (
           <ul className="button-list">
@@ -75,10 +93,10 @@ function App() {
         )}
       </header>
       {showForm === 'register' && !isLoggedIn && (
-        <Register setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} />
+        <Register setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
       )}
       {showForm === 'login' && !isLoggedIn && (
-        <Login setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} />
+        <Login setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
       )}
       {currentPage === 'edit-bid' && (
         <EditBid
@@ -109,12 +127,12 @@ function App() {
       {currentPage === 'vote' && (
         <Vote
           tenders={tenders}
-          handleVote={(tenderId) => handleVote(contract, account, tenderId)}
+          handleVote={(tenderId) => onVote(contract, account, tenderId)}
           setCurrentPage={setCurrentPage}
           setIsLoggedIn={setIsLoggedIn}
         />
       )}
-      <h1>Current Tenders</h1>
+      <h1 className="current-tenders-title">Current Tenders</h1>
       <table className="App-table">
         <thead>
           <tr>

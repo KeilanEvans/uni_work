@@ -1,9 +1,15 @@
 import React from 'react';
+import FormContainer from './FormContainer';
 
 const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn }) => {
   return (
-    <div className="bid-container">
-      <h1 className="page-title">Place a Bid</h1>
+    <FormContainer
+      title="Place a Bid"
+      onClose={() => {
+        setCurrentPage('home');
+        setIsLoggedIn(true);
+      }}
+    >
       <form className="bid-form">
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
@@ -23,7 +29,7 @@ const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn
         <div className="form-buttons">
           <button
             type="button"
-            className="button bid-button"
+            className="button create-button"
             onClick={() => {
               const tenderID = document.getElementById("bid-tender-id").value;
               const bidValue = document.getElementById("bid-amount").value;
@@ -54,7 +60,7 @@ const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn
           </button>
         </div>
       </form>
-    </div>
+    </FormContainer>
   );
 };
 
