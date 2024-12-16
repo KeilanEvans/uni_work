@@ -1,25 +1,17 @@
-import Papa from 'papaparse';
+import axios from 'axios';
 
-const handleLogin = async (setIsLoggedIn) => {
-  const response = await fetch('./users.csv');
-  const csvData = await response.text();
-
-  Papa.parse(csvData, {
-    header: true,
-    complete: (result) => {
-      const users = result.data;
-      const username = prompt("Enter Username:");
-      const password = prompt("Enter Password:");
-      const user = users.find((u) => u.username === username && u.password === password);
-
-      if (user) {
-        alert("Login Successful");
-        setIsLoggedIn(true);
-      } else {
-        alert("Invalid credentials");
-      }
-    },
-  });
+const handleLogin = async (username, password, setIsLoggedIn) => {
+  try {
+    const response = await axios.post('/api/auth/login', {
+      username,
+      password,
+    });
+    localStorage.setItem('token', response.data.token);
+    alert('Login successful');
+    setIsLoggedIn(true);
+  } catch (error) {
+    alert(error.response.data.message);
+  }
 };
 
 export default handleLogin;
