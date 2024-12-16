@@ -29,6 +29,7 @@ function App() {
   const [bids, setBids] = useState({});
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(null); // null, 'register', or 'login'
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => { 
     initWeb3(setWeb3, setAccount, setContract, setLoading, setTenders, setBids);
@@ -40,6 +41,13 @@ function App() {
       getTenders(contract, setLoading, setTenders);
     }
   }, [contract]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [])
 
   const handleFormClose = () => {
     setShowForm(null);
