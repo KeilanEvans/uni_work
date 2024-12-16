@@ -45,17 +45,17 @@ function App() {
       <header className="App-header">
         <p>Welcome to the Welsh Government Community Voting initiative!</p>
         {isLoggedIn ? (
-          <div className="button-container">
-            <button className="button" onClick={() => setCurrentPage('create-tender')}>Create Tender</button>
-            <button className="button" onClick={() => setCurrentPage('vote')}>Vote</button>
-            <button className="button" onClick={() => setCurrentPage('bids')}>Bids</button>
-            <button className="button" onClick={() => setCurrentPage('edit-bid')}>Edit Bids</button>
-          </div>
+          <ul className="button-list">
+            <li><button className="button" onClick={() => setCurrentPage('create-tender')}>Create Tender</button></li>
+            <li><button className="button" onClick={() => setCurrentPage('vote')}>Vote</button></li>
+            <li><button className="button" onClick={() => setCurrentPage('bids')}>Bids</button></li>
+            <li><button className="button" onClick={() => setCurrentPage('edit-bid')}>Edit Bids</button></li>
+          </ul>
         ) : (
-          <div>
-            <button className="button" onClick={handleRegister}>Register</button>
-            <button className="button" onClick={() => handleLogin(setIsLoggedIn)}>Log In</button>
-          </div>
+          <ul className="button-list">
+            <li><button className="button" onClick={handleRegister}>Register</button></li>
+            <li><button className="button" onClick={() => handleLogin(setIsLoggedIn)}>Log In</button></li>
+          </ul>
         )}
       </header>
       {currentPage === 'edit-bid' && (
