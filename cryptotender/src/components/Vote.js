@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import FormContainer from './FormContainer';
 
 const Vote = ({ tenders, handleVote, setCurrentPage, setIsLoggedIn }) => {
   const selectRef = useRef(null);
@@ -22,8 +23,13 @@ const Vote = ({ tenders, handleVote, setCurrentPage, setIsLoggedIn }) => {
   };
 
   return (
-    <div className="vote-container">
-      <h1 className="page-title">Vote on a Tender</h1>
+    <FormContainer
+      title="Vote on a Tender"
+      onClose={() => {
+        setCurrentPage('home');
+        setIsLoggedIn(true);
+      }}
+    >
       <form className="vote-form">
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
@@ -39,7 +45,7 @@ const Vote = ({ tenders, handleVote, setCurrentPage, setIsLoggedIn }) => {
         <div className="form-buttons">
           <button
             type="button"
-            className="button vote-button"
+            className="button create-button"
             onClick={handleSubmit}
           >
             Submit Vote
@@ -56,7 +62,7 @@ const Vote = ({ tenders, handleVote, setCurrentPage, setIsLoggedIn }) => {
           </button>
         </div>
       </form>
-    </div>
+      </FormContainer>
   );
 };
 

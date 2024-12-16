@@ -29,26 +29,25 @@ function App() {
   const [bids, setBids] = useState({});
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(null); // null, 'register', or 'login'
-  const [currentTime, setCurrentTime] = useState(Date.now());
 
-  // Hook to initialise web3 connection and connect to MetaMask Wallet
-  useEffect(() => { 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+    }
     initWeb3(setWeb3, setAccount, setContract, setLoading, setTenders, setBids);
     connectWallet();
-  }, []); 
+  }, []);
 
-  // Hook to get the tenders for the table to render
   useEffect(() => {
     if (contract) {
       getTenders(contract, setLoading, setTenders);
     }
   }, [contract]);
 
-  // Hook to handle the countdown of the timers without getting data from blockchain
-  //    Leads to asynchronous state between front and back-end but for this purposes it is fine
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTime(Date.now());
+      // Update the component to trigger re-render
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -66,6 +65,12 @@ function App() {
     setShowForm(null);
   };
 
+  const handleLogoutClick = () => {
+    handleLogout(setIsLoggedIn);
+    localStorage.removeItem('token');
+    handleFormClose();
+  };
+
   return (
     <div className="App">
       <img src={logo} className="App-logo" alt="logo" />
@@ -77,7 +82,7 @@ function App() {
             <li><button className="button" onClick={() => setCurrentPage('vote')}>Vote</button></li>
             <li><button className="button" onClick={() => setCurrentPage('bids')}>Bids</button></li>
             <li><button className="button" onClick={() => setCurrentPage('edit-bid')}>Edit Bids</button></li>
-            <li><button className="button" onClick={() => { handleLogout(setIsLoggedIn); handleFormClose(); }}>Log Out</button></li>
+            <li><button className="button" onClick={handleLogoutClick}>Log Out</button></li>
           </ul>
         ) : (
           <ul className="button-list">
@@ -87,10 +92,10 @@ function App() {
         )}
       </header>
       {showForm === 'register' && !isLoggedIn && (
-        <Register setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} />
+        <Register setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
       )}
       {showForm === 'login' && !isLoggedIn && (
-        <Login setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} />
+        <Login setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
       )}
       {currentPage === 'edit-bid' && (
         <EditBid
@@ -126,7 +131,7 @@ function App() {
           setIsLoggedIn={setIsLoggedIn}
         />
       )}
-      <h1 className='App-table-title'>Current Tenders</h1>
+      <h1 className="current-tenders-title">Current Tenders</h1>
       <table className="App-table">
         <thead>
           <tr>

@@ -1,9 +1,15 @@
 import React from 'react';
+import FormContainer from './FormContainer';
 
 const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, web3 }) => {
   return (
-    <div className="edit-bid-container">
-      <h1 className="page-title">Edit Your Bid</h1>
+    <FormContainer
+      title="Edit Bid"
+      onClose={() => {
+        setCurrentPage('home');
+        setIsLoggedIn(true);
+      }}
+    >
       <form className="edit-bid-form">
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
@@ -22,7 +28,7 @@ const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, 
         <div className="form-buttons">
           <button
             type="button"
-            className="button edit-bid-button"
+            className="button create-button"
             onClick={() => {
               const tenderID = document.getElementById("edit-bid-tender-id").value;
               const bidValue = document.getElementById("edit-bid-amount").value;
@@ -48,7 +54,7 @@ const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, 
           </button>
         </div>
       </form>
-    </div>
+    </FormContainer>
   );
 };
 

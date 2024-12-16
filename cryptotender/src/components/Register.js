@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import handleRegister from '../utils/handleRegister';
+import FormContainer from './FormContainer';
 
-const Register = ({ setIsLoggedIn }) => {
+const Register = ({ setIsLoggedIn, setCurrentPage }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [address, setAddress] = useState('');
@@ -18,34 +19,53 @@ const Register = ({ setIsLoggedIn }) => {
   };
 
   return (
-    <div class="form-container">
+    <FormContainer
+      title="Register"
+      onClose={() => {
+        setCurrentPage('home');
+        setIsLoggedIn(false);
+      }}
+    >
       {isRegistered ? (
         <h1>Registration Successful!</h1>
       ) : (
-        <>
-          <h1>Register</h1>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Ethereum Address"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
-          <button onClick={handleSubmit}>Register</button>
-        </>
+        <form className="register-form">
+          <div className="form-group">
+            <label className="form-label">Username:</label>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="form-input"
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Password:</label>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="form-input"
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Ethereum Address:</label>
+            <input
+              type="text"
+              placeholder="Ethereum Address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="form-input"
+            />
+          </div>
+          <div className="form-buttons">
+            <button onClick={handleSubmit} className="button create-button">Register</button>
+          </div>
+        </form>
       )}
-    </div>
+    </FormContainer>
   );
 };
 
