@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import handleLogin from '../utils/handleLogin';
 import FormContainer from './FormContainer';
 
 const Login = ({ setIsLoggedIn, setCurrentPage }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+      setCurrentPage('home');
+    }
+  }, [setIsLoggedIn, setCurrentPage]);
 
   const handleSubmit = (e) => {
     e.preventDefault(); // Prevent default form submission
