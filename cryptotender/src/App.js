@@ -117,10 +117,10 @@ function App() {
                   className={clickedRow === tender.id ? 'Clicked-row' : ''}
                   onClick={() => handleRowClick(tender.id, clickedRow, setClickedRow)}
                 >
-                  <td>{tender.id}</td>
-                  <td>{tender.name}</td>
+                  <td>{tender.id.toString()}</td>
+                  <td>{tender.title}</td>
                   <td>{tender.description || 'N/A'}</td>
-                  <td>{tender.votes}</td>
+                  <td>{tender.votes.toString()}</td>
                   <td>{calculateOpenStatus(tender.endTime)}</td>
                   <td
                     className={
