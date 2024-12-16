@@ -90,6 +90,8 @@ contract TenderContract {
             isOpen: true,
             votes: 0
         }));
+
+        tenderTotalCount++;
     }
 
     // Function to place a bid on a tender (only registered users can place bids on open tenders)
