@@ -113,7 +113,7 @@ function App() {
           setIsLoggedIn={setIsLoggedIn}
         />
       )}
-      <h1>Current Tenders</h1>
+      <h1 className='App-table-title'>Current Tenders</h1>
       <table className="App-table">
         <thead>
           <tr>
