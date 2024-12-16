@@ -5,8 +5,8 @@ import EditBid from './components/EditBids';
 import CreateTender from './components/CreateTender';
 import PlaceBid from './components/PlaceBid';
 import Vote from './components/Vote';
-import handleRegister from './utils/handleRegister';
-import handleLogin from './utils/handleLogin';
+import Register from './components/Register';
+import Login from './components/Login';
 import handleCreateTender from './utils/handleCreateTender';
 import handleEditBid from './utils/handleEditBid';
 import handlePlaceBid from './utils/handlePlaceBid';
@@ -15,6 +15,7 @@ import handleRowClick from './utils/handleRowClick';
 import calculateOpenStatus from './utils/calculateOpenStatus';
 import calculateTimeLeftStr from './utils/calculateTimeLeftStr';
 import calculateTimeLeftInt from './utils/calculateTimeLeftInt';
+import handleLogout from './utils/handleLogout.js';
 import { initWeb3, connectWallet, getTenders } from './utils/web3Utils';
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
   const [account, setAccount] = useState("");
   const [bids, setBids] = useState({});
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(null); // null, 'register', or 'login'
 
   useEffect(() => { 
     initWeb3(setWeb3, setAccount, setContract, setLoading, setTenders, setBids);
@@ -39,6 +41,10 @@ function App() {
     }
   }, [contract]);
 
+  const handleFormClose = () => {
+    setShowForm(null);
+  };
+
   return (
     <div className="App">
       <img src={logo} className="App-logo" alt="logo" />
@@ -50,14 +56,21 @@ function App() {
             <li><button className="button" onClick={() => setCurrentPage('vote')}>Vote</button></li>
             <li><button className="button" onClick={() => setCurrentPage('bids')}>Bids</button></li>
             <li><button className="button" onClick={() => setCurrentPage('edit-bid')}>Edit Bids</button></li>
+            <li><button className="button" onClick={() => { handleLogout(setIsLoggedIn); handleFormClose(); }}>Log Out</button></li>
           </ul>
         ) : (
           <ul className="button-list">
-            <li><button className="button" onClick={handleRegister}>Register</button></li>
-            <li><button className="button" onClick={() => handleLogin(setIsLoggedIn)}>Log In</button></li>
+            <li><button className="button" onClick={() => setShowForm('register')}>Register</button></li>
+            <li><button className="button" onClick={() => setShowForm('login')}>Log In</button></li>
           </ul>
         )}
       </header>
+      {showForm === 'register' && !isLoggedIn && (
+        <Register setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} />
+      )}
+      {showForm === 'login' && !isLoggedIn && (
+        <Login setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} />
+      )}
       {currentPage === 'edit-bid' && (
         <EditBid
           bids={bids}

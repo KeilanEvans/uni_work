@@ -1,15 +1,36 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 const Vote = ({ tenders, handleVote, setCurrentPage, setIsLoggedIn }) => {
+  const selectRef = useRef(null);
+
+  useEffect(() => {
+    console.log("Tenders:", tenders); // Debugging statement
+  }, [tenders]);
+
+  const handleSubmit = () => {
+    const vote = selectRef.current.value;
+    console.log("Selected vote:", vote); // Debugging statement
+
+    if (!vote) {
+      alert("Please select a tender to vote on!");
+      return;
+    }
+
+    handleVote(vote);
+    setCurrentPage('home');
+    setIsLoggedIn(true);
+  };
+
   return (
     <div className="vote-container">
       <h1 className="page-title">Vote on a Tender</h1>
       <form className="vote-form">
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
-          <select id="vote-tender-id" className="form-input">
+          <select id="vote-tender-id" className="form-input" ref={selectRef}>
+            <option value="">Select a tender</option>
             {tenders.map((tender, index) => (
-              <option key={index} value={tender.id}>
+              <option key={index} value={tender.id.toString()}>
                 {tender.title} - Votes: {tender.votes.toString()}
               </option>
             ))}
@@ -19,18 +40,7 @@ const Vote = ({ tenders, handleVote, setCurrentPage, setIsLoggedIn }) => {
           <button
             type="button"
             className="button vote-button"
-            onClick={() => {
-              const vote = document.getElementById("vote-tender-id").value;
-
-              if (!vote) {
-                alert("Please select a tender to vote on!");
-                return;
-              }
-
-              handleVote(vote);
-              setCurrentPage('home');
-              setIsLoggedIn(true);
-            }}
+            onClick={handleSubmit}
           >
             Submit Vote
           </button>

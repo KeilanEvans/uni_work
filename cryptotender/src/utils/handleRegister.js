@@ -1,37 +1,19 @@
-import Papa from 'papaparse';
-import { saveAs } from 'file-saver';
+import axios from 'axios';
 
-const handleRegister = async () => {
-  const username = prompt("Choose a Username:");
-  const password = prompt("Choose a Password:");
-
-  const response = await fetch('./users.csv');
-  const csvData = await response.text();
-
-  Papa.parse(csvData, {
-    header: true,
-    complete: (result) => {
-      const users = result.data;
-      const userExists = users.some((u) => u.username === username);
-
-      if (userExists) {
-        alert("Username already exists. Please choose another.");
-        return;
-      }
-
-      // Append new user
-      users.push({ username, password });
-
-      // Convert back to CSV
-      const updatedCSV = Papa.unparse(users);
-
-      // Download updated CSV
-      const blob = new Blob([updatedCSV], { type: 'text/csv;charset=utf-8;' });
-      saveAs(blob, 'users.csv');
-
-      alert("Registration Successful. Please log in.");
-    },
-  });
+const handleRegister = async (username, password, address, setIsLoggedIn) => {
+  try {
+    const response = await axios.post('/api/auth/register', {
+      username,
+      password,
+      address,
+    });
+    console.log("Registration response:", response); // Debugging statement
+    alert(response.data.message);
+    setIsLoggedIn(true);
+  } catch (error) {
+    console.error("Registration error:", error); // Debugging statement
+    alert(error.response?.data?.message || "Registration failed");
+  }
 };
 
 export default handleRegister;

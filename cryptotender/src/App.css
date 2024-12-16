@@ -18,7 +18,6 @@ body {
   animation: App-logo-spin infinite 20s linear;
 }
 
-
 .App-header {
   background-color: #282c34;
   min-height: 10vh;
@@ -41,34 +40,43 @@ body {
   min-height: 50vh;
 }
 
-.App-table th, .App-table td {
-  padding: 10px; 
-  border: 1px solid #ddd;
-  text-align: center;
-  align-items: center;
+/* Form styles */
+.form-container {
+  background-color: #3a3f47;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 300px;
+  margin: 20px auto;
+  color: #fff;
 }
 
-.App-table th {
-  background-color: #282c34;
-  color: #ddd;
-  text-align: center;
+.form-container h1 {
+  margin-bottom: 20px;
 }
 
-.App-table tr:hover {
-  background-color: #696a6b;
+.form-container input {
+  width: calc(100% - 20px); /* Adjust width to fit within the container */
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 4px;
+  box-sizing: border-box; /* Ensure padding and border are included in the element's total width and height */
 }
 
-.App-link {
-  color: #61dafb;
+.form-container button {
+  width: 100%;
+  padding: 10px;
+  background-color: #61dafb;
+  border: none;
+  border-radius: 4px;
+  color: #282c34;
+  font-size: 16px;
+  cursor: pointer;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.form-container button:hover {
+  background-color: #21a1f1;
 }
 
 .button-list {
