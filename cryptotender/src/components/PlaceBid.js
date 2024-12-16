@@ -11,8 +11,8 @@ const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn
             {tenders
               .filter((tender) => !tender.isOpen && tender.highestBidder === "0x0000000000000000000000000000000000000000") // Only tenders in the bidding phase
               .map((tender, index) => (
-                <option key={index} value={tender.id}>
-                  {tender.name} - Current Highest Bid: {web3.utils.fromWei(tender.highestBid, "ether")} ETH
+                <option key={index} value={tender.id.toString()}>
+                  {tender.title} - Current Highest Bid: {web3.utils.fromWei(tender.highestBid, "ether")} ETH
                 </option>
               ))}
           </select>
