@@ -70,6 +70,7 @@ function App() {
           <ul className="button-list">
             <li><button className="button" onClick={() => setShowForm('register')}>Register</button></li>
             <li><button className="button" onClick={() => setShowForm('login')}>Log In</button></li>
+            <li><button className="button" onClick={() => setCurrentPage('vote')}>Vote</button></li>
           </ul>
         )}
       </header>

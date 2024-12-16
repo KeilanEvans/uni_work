@@ -8,14 +8,13 @@ const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
           <select id="bid-tender-id" className="form-input">
-            {tenders
-              .filter((tender) => !tender.isOpen && tender.highestBidder === "0x0000000000000000000000000000000000000000") // Only tenders in the bidding phase
-              .map((tender, index) => (
-                <option key={index} value={tender.id.toString()}>
-                  {tender.title} - Current Highest Bid: {web3.utils.fromWei(tender.highestBid, "ether")} ETH
-                </option>
-              ))}
+            {tenders.map((tender, index) => (
+              <option key={index} value={tender.id.toString()}>
+                {tender.title} - Current Highest Bid: {web3.utils.fromWei(tender.highestBid, "ether")} ETH
+              </option>
+            ))}
           </select>
+
         </div>
         <div className="form-group">
           <label className="form-label">Bid Amount (in ETH):</label>
@@ -29,6 +28,8 @@ const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn
               const tenderID = document.getElementById("bid-tender-id").value;
               const bidValue = document.getElementById("bid-amount").value;
 
+              console.log("Tenders in PlaceBid.js:", tenders);
+              
               if (!tenderID || !bidValue) {
                 alert("All fields are required.");
                 return;
