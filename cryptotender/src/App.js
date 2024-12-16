@@ -19,14 +19,20 @@ function App() {
   const [web3, setWeb3] = useState(null);
   const [account, setAccount] = useState("");
   const [bids, setBids] = useState({});
+  const [loading, setLoading] = useState(true)
 
   let isRequestPending = false;
 
   useEffect(() => { 
     initWeb3();
     connectWallet();
-    getTenders();
   }, []); 
+
+  useEffect(() => {
+    if (contract) {
+      getTenders();
+    }
+  }, [contract])
 
   const getTenders = async() => {
     if (!contract) {
@@ -35,12 +41,15 @@ function App() {
     }
 
     try {
+      setLoading(true);
       const tenders = await contract.methods.getTenders().call();
-      console.log("Fetched tenders:", tenders);
+      setTenders(tenders);
       return tenders;
     } catch (error) {
       console.error("Error fetching tenders:", error);
       return [];
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -85,21 +94,20 @@ function App() {
       const web3Instance = new Web3(provider);
       const accounts = await web3Instance.eth.requestAccounts();
       const tenderContract = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+      console.log(tenderContract)
 
       setWeb3(web3Instance);
       setAccount(accounts[0]);
       setContract(tenderContract);
 
-      console.log("Connected to blockchain:", accounts[0]);
+      console.log("Connected to blockchain with account:", accounts[0]);
 
       if (!tenderContract) {
-        throw new Error("Contract not initialised properly!")
+        throw new Error("Issue: Contract not initialised properly!")
       }
 
       // Load Tenders
-      const loadedTenders = await getTenders();
-      console.log(loadedTenders);
-      setTenders(loadedTenders);
+      await getTenders();
 
       // Load Bids for Current User
       const userBids = await tenderContract.methods.getBids(accounts[0]).call();
@@ -561,29 +569,40 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {tenders.map((tender, index) => {
-              const details = extraDetails.find((d) => d.id == tender.id) || {};
-              return (
-                <tr 
-                  key={index}
-                  className={clickedRow === tender.id ? 'Clicked-row' : ''}
-                  onClick={() => handleRowClick(tender.id)}
-                >
-                  <td>{tender.id}</td>
-                  <td>{tender.name}</td>
-                  <td>{details.description || 'N/A'}</td>
-                  <td>{tender.votes}</td>
-                  <td>{calculateOpenStatus(tender.endTime)}</td>
-                  <td
-                    className={
-                      calculateTimeLeftInt(tender.endTime) < 3600
-                      ? 'Closing-bidding'
-                      : 'Open-bidding'
-                    }
-                  >{calculateTimeLeftStr(tender.endTime)}</td>
-                </tr>
-              );
-            })}
+            {loading ? (
+              <tr>
+                <td colSpan="6">Loading...</td>
+              </tr>
+            ) : tenders.length > 0 ? (
+              tenders.map((tender, index) => {
+                return (
+                  <tr
+                    key={index}
+                    className={clickedRow === tender.id ? 'Clicked-row' : ''}
+                    onClick={() => handleRowClick(tender.id)}
+                  >
+                    <td>{tender.id}</td>
+                    <td>{tender.name}</td>
+                    <td>{tender.description || 'N/A'}</td>
+                    <td>{tender.votes}</td>
+                    <td>{calculateOpenStatus(tender.endTime)}</td>
+                    <td
+                      className={
+                        calculateTimeLeftInt(tender.endTime) < 3600
+                          ? 'Closing-bidding'
+                          : 'Open-bidding'
+                      }
+                    >
+                      {calculateTimeLeftStr(tender.endTime)}
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="6">No tenders available</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
