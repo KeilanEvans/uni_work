@@ -5,16 +5,17 @@ contract TenderContract {
     
     // Struct to store details of a Tender
     struct Tender {
-        uint256 id;                // Unique ID of the tender
-        string title;
-        address creator;           // Address of the tender creator
-        uint256 startTime;         // Start time of the tender
-        uint256 endTime;           // End time of the tender
-        string description;
-        uint256 highestBid;        // Highest bid amount received for the tender
-        address highestBidder;     // Address of the highest bidder
-        bool isOpen;               // Status of the tender (open or closed)
-        uint256 votes;             // Number of votes received for the tender
+        uint256 id;                 // Unique ID of the tender
+        string title;               // Title of the tender
+        address creator;            // Address of the tender creator
+        uint256 startTime;          // Start time of the tender
+        uint256 endTime;            // End time of the tender
+        string description;         // Description of what the tender involves
+        uint256 bounty;             // Reward that government is willing to pay highestBidder
+        uint256 highestBid;         // Highest bid amount received for the tender
+        address highestBidder;      // Address of the highest bidder
+        bool isOpen;                // Status of the tender (open or closed)
+        uint256 votes;              // Number of votes received for the tender
     }
 
     // Struct to store details of a Bid
@@ -23,11 +24,15 @@ contract TenderContract {
         bool exists;               // Indicates whether the bid exists
     }
 
+    event TenderClosed(uint256 tenderId, address winner, uint256 winningBid, uint256 bountyAwarded);
+
     address public owner;          // Address of the contract owner
-    mapping(address => bool) public userRegistry; // Mapping to store registered users
     Tender[] public tenders;       // Array to store all tenders
+    uint256 public tenderTotalCount; 
+    mapping(address => bool) public userRegistry; // Mapping to store registered users
     mapping(uint256 => mapping(address => Bid)) public bids; // Mapping from tender ID to bids by address
     mapping(uint256 => mapping(address => bool)) public votes; // Mapping from tender ID to votes by address
+    mapping(uint256 => uint256) public bidCountPerTender; // Keep track of number of bids for each tender
 
     // Modifier to restrict functions to only registered users
     modifier onlyRegisteredUser() {
@@ -58,6 +63,10 @@ contract TenderContract {
         owner = msg.sender;
     }
 
+    function getBidCount(uint256 tenderId) external view returns(uint256) {
+        return bidCountPerTender[tenderId];
+    }
+
     // Function to register users (only the owner can register users)
     function registerUser(address user) external {
         require(msg.sender == owner, "Only the owner can register users.");
@@ -65,7 +74,7 @@ contract TenderContract {
     }
 
     // Function to create a new tender (only registered users can create tenders)
-    function createTender(string memory title, uint256 startTime, uint256 endTime, string memory description) external onlyRegisteredUser {
+    function createTender(string memory title, uint256 startTime, uint256 endTime, string memory description) external payable onlyRegisteredUser {
         require(startTime < endTime, "Start time must be earlier than end time.");
         uint256 tenderId = tenders.length;
         tenders.push(Tender({
@@ -75,16 +84,20 @@ contract TenderContract {
             startTime: startTime,
             endTime: endTime,
             description: description,
+            bounty: msg.value,
             highestBid: 0,
             highestBidder: address(0),
             isOpen: true,
             votes: 0
         }));
+
+        tenderTotalCount++;
     }
 
     // Function to place a bid on a tender (only registered users can place bids on open tenders)
     function placeBid(uint256 tenderId) external payable tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
+
         require(block.timestamp >= tender.startTime, "Bidding hasn't started yet.");
         require(block.timestamp <= tender.endTime, "Bidding time is over.");
         require(!bids[tenderId][msg.sender].exists, "You have already placed a bid.");
@@ -98,11 +111,14 @@ contract TenderContract {
             tender.highestBid = msg.value;
             tender.highestBidder = msg.sender;
         }
+
+        bidCountPerTender[tenderId] += 1;
     }
 
     // Function to revise a bid before bidding time ends
     function reviseBid(uint256 tenderId) external payable tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
+
         require(bids[tenderId][msg.sender].exists, "No bid placed yet.");
         require(block.timestamp <= tender.endTime, "Bidding time is over.");
 
@@ -123,7 +139,11 @@ contract TenderContract {
 
     // Function to vote for a tender (only registered users can vote on open tenders)
     function vote(uint256 tenderId) external onlyRegisteredUser tenderOpen(tenderId) {
+        Tender storage tender = tenders[tenderId];
+
+        require(block.timestamp <= tender.endTime, "Voting has ended.");
         require(!votes[tenderId][msg.sender], "You have already voted.");
+
         votes[tenderId][msg.sender] = true;
         tenders[tenderId].votes++;
     }
@@ -131,12 +151,30 @@ contract TenderContract {
     // Function to close a tender and finalize the winner (only the tender creator can close the tender)
     function closeTender(uint256 tenderId) external onlyTenderCreator(tenderId) tenderClosed(tenderId) {
         Tender storage tender = tenders[tenderId];
+        require(tender.isOpen, "Tender Already closed.");
         tender.isOpen = false;
         
-        // Transfer the funds to the tender creator
-        if (tender.highestBidder != address(0)) {
-            payable(tender.creator).transfer(tender.highestBid);
+        address winner = tender.highestBidder;
+        uint256 winningBid = tender.highestBid;
+        uint256 bounty = tender.bounty;
+
+
+        // The creator (Government/Local Council) receives the highest bid
+        if (winner != address(0) && winningBid > 0) {
+            payable(tender.creator).transfer(winningBid);
         }
+
+        // Assign the bounty to the highest bidder if bids were made
+        if (winner != address(0) && bounty > 0) {
+            payable(winner).transfer(bounty);
+        }
+
+        // If there were no bids made, return the bounty to the creator
+        if (bidCountPerTender[tenderId] == 0) {
+            payable(tender.creator).transfer(bounty);
+        }
+
+        emit TenderClosed(tenderId, winner, winningBid, bounty);
     }
 
     // Function to return the total number of tenders.
@@ -144,52 +182,36 @@ contract TenderContract {
         return tenders.length;
     }
 
-    // Overloaded tenderCount() to return only open tenders
-function tenderCount(bool open) external view returns (uint256) {
-    uint256 temp = 0;
-    if (open) {
+    // Function to get all Tenders
+    function getTenders() external view returns (Tender[] memory) {
+        return tenders;
+    }
+
+    // Function to get all TenderIDs a user has bid on
+    function getBids(address account) external view returns (uint256[] memory) {
+        uint256 count = 0;
+
+        // Count how many bids exist for the account
         for (uint256 i = 0; i < tenders.length; i++) {
-            if (tenders[i].isOpen) {
-                temp++;
+            if (bids[i][account].exists) {
+                count++;
             }
         }
-    } else {
-        return tenders.length;
-    }
 
-    return temp;
-}
+        // Create an array of the appropriate size
+        uint256[] memory temp = new uint256[](count);
+        uint256 index = 0;
 
-// Function to get all Tenders
-function getTenders() external view returns (Tender[] memory) {
-    return tenders;
-}
-
-// Function to get all TenderIDs a user has bid on
-function getBids(address account) external view returns (uint256[] memory) {
-    uint256 count = 0;
-
-    // Count how many bids exist for the account
-    for (uint256 i = 0; i < tenders.length; i++) {
-        if (bids[i][account].exists) {
-            count++;
+        // Add tenderIDs to the array
+        for (uint256 i = 0; i < tenders.length; i++) {
+            if (bids[i][account].exists) {
+                temp[index] = i; // Add the tenderID
+                index++;
+            }
         }
+
+        return temp;
     }
-
-    // Create an array of the appropriate size
-    uint256[] memory temp = new uint256[](count);
-    uint256 index = 0;
-
-    // Add tenderIDs to the array
-    for (uint256 i = 0; i < tenders.length; i++) {
-        if (bids[i][account].exists) {
-            temp[index] = i; // Add the tenderID
-            index++;
-        }
-    }
-
-    return temp;
-}
 
     // Function to get the details of a tender
     function getTender(uint256 tenderId) external view returns (
