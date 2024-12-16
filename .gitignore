@@ -22,4 +22,4 @@ bin/
 
 # Ignore env
 .env
-.env
+
