@@ -386,7 +386,7 @@ function App() {
               <select id="vote-tender-id" className="form-input">
                 {tenders.map((tender, index) => (
                   <option key={index} value={tender.id}>
-                    {tender.name} - Votes: {tender.votes}
+                    {tender.title} - Votes: {tender.votes.toString()}
                   </option>
                 ))}
               </select>
