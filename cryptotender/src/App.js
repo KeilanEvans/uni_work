@@ -66,10 +66,10 @@ function App() {
         )}
       </header>
       {showForm === 'register' && !isLoggedIn && (
-        <Register setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} />
+        <Register setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
       )}
       {showForm === 'login' && !isLoggedIn && (
-        <Login setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} />
+        <Login setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
       )}
       {currentPage === 'edit-bid' && (
         <EditBid
@@ -105,7 +105,7 @@ function App() {
           setIsLoggedIn={setIsLoggedIn}
         />
       )}
-      <h1>Current Tenders</h1>
+      <h1 className="current-tenders-title">Current Tenders</h1>
       <table className="App-table">
         <thead>
           <tr>

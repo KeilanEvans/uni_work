@@ -1,40 +1,33 @@
 import React from 'react';
+import FormContainer from './FormContainer';
 
 const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => {
   return (
-    <div className="create-tender-container">
-      <h1 className="page-title">Create a New Tender</h1>
+    <FormContainer
+      title="Create a New Tender"
+      onClose={() => {
+        setCurrentPage('home');
+        setIsLoggedIn(true);
+      }}
+    >
       <form className="tender-form">
         <div className="form-group">
           <label className="form-label">Tender Name:</label>
-          <input 
-            type="text" 
-            id="tender-name" 
-            className="form-input"
-            required 
-          />
+          <input type="text" id="tender-name" className="form-input" required />
         </div>
         <div className="form-group">
           <label className="form-label">Description:</label>
           <textarea id="tender-description" className="form-input form-textarea"></textarea>
         </div>
-        <div className="form-group">
-          <label className="form-label">Close Date:</label>
-          <input 
-            type="date" 
-            id="tender-date" 
-            className="form-input"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Close Time:</label>
-          <input 
-            type="time" 
-            id="tender-time" 
-            className="form-input"
-            required
-          />
+        <div className="form-group-inline">
+          <div className="form-group">
+            <label className="form-label">Close Date:</label>
+            <input type="date" id="tender-date" className="form-input" required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Close Time:</label>
+            <input type="time" id="tender-time" className="form-input" required />
+          </div>
         </div>
         <div className="form-buttons">
           <button
@@ -67,7 +60,7 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
           </button>
         </div>
       </form>
-    </div>
+    </FormContainer>
   );
 };
 
