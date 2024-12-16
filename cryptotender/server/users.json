@@ -3,5 +3,10 @@
     "username": "Keilan",
     "password": "$2b$10$PmX1sPyGdeUC1YfwcwjdZuw8485Y1x6P41iz3cQxksOE6/tVgyjLy",
     "address": "0xc9fdbe9a792C8FAfbc652032c145a6F78D299E3C"
+  },
+  {
+    "username": "Alex",
+    "password": "$2b$10$WszzPQ1No0Vln0eKAH151u42qrP0zmpCOmHnwrH/z/hAFVevVpLAG",
+    "address": "0x97d4FD146db534812f6cD23F849D24Aa4BABFf46"
   }
 ]

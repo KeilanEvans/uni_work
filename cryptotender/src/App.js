@@ -31,23 +31,36 @@ function App() {
   const [showForm, setShowForm] = useState(null); // null, 'register', or 'login'
   const [currentTime, setCurrentTime] = useState(Date.now());
 
+  // Hook to initialise web3 connection and connect to MetaMask Wallet
   useEffect(() => { 
     initWeb3(setWeb3, setAccount, setContract, setLoading, setTenders, setBids);
     connectWallet();
   }, []); 
 
+  // Hook to get the tenders for the table to render
   useEffect(() => {
     if (contract) {
       getTenders(contract, setLoading, setTenders);
     }
   }, [contract]);
 
+  // Hook to handle the countdown of the timers without getting data from blockchain
+  //    Leads to asynchronous state between front and back-end but for this purposes it is fine
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
     }, 1000);
     return () => clearInterval(interval);
-  }, [])
+  }, []);
+
+  const onVote = async (contract, account, tenderId) => {
+    try {
+      await handleVote(contract, account, tenderId);
+      await getTenders(contract, setLoading, setTenders);
+    } catch (error) {
+      console.error("Error voting:", error.message || error.toString());
+    }
+  }
 
   const handleFormClose = () => {
     setShowForm(null);
@@ -108,7 +121,7 @@ function App() {
       {currentPage === 'vote' && (
         <Vote
           tenders={tenders}
-          handleVote={(tenderId) => handleVote(contract, account, tenderId)}
+          handleVote={(tenderId) => onVote(contract, account, tenderId)}
           setCurrentPage={setCurrentPage}
           setIsLoggedIn={setIsLoggedIn}
         />
