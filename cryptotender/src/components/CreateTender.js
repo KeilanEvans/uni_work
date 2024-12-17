@@ -1,6 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getEthToGbpRate } from '../utils/web3Utils';
 
 const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => {
+  const [bounty, setBounty] = useState(0);
+  const [ethToGbp, setEthToGbp] = useState("0.00");
+  const [minBid, setMinBid] = useState(0);
+
+  useEffect(() => {
+    const updateGbpValue = async () => {
+      if (!bounty || bounty <= 0) {
+        setEthToGbp("0.00"); // Reset when no input or invalid input
+        return;
+      }
+  
+      try {
+        const rate = await getEthToGbpRate(); // Fetch the latest ETH-to-GBP rate
+        const converted = (parseFloat(bounty) * rate).toFixed(2); // Multiply & format
+        setEthToGbp(`${converted}`);
+      } catch (error) {
+        console.error("Error fetching GBP rate:", error);
+        setEthToGbp("Error");
+      }
+    };
+  
+    updateGbpValue(); // Call the function whenever bounty changes
+  }, [bounty]);
+  
   return (
     <div className="create-tender-container">
       <h1 className="page-title">Create a New Tender</h1>
@@ -42,7 +67,15 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
             type="number"
             id="tender-bounty"
             className="form-input"
+            onChange={(e) => setBounty(e.target.value)}
             required
+          />
+          <input
+            type="text"
+            id="tender-bounty-gbp"
+            className="form-input"
+            value={`£${ethToGbp}`}
+            readOnly
           />
         </div>
         <div>
