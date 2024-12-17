@@ -107,7 +107,7 @@ const writeUsersToFile = (users) => {
 
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { username, password, address } = req.body;
+    const { username, password, address, permission } = req.body;
     const users = readUsersFromFile();
 
     const userExists = users.some(user => user.username === username);
@@ -116,11 +116,11 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    users.push({ username, password: hashedPassword, address });
+    users.push({ username, password: hashedPassword, address, permission });
     writeUsersToFile(users);
 
     res.status(201).send('User registered');
-    
+
   } catch (error) {
     console.error('Error during registration:', error);
     res.status(500).send({ message: 'Internal Server Error' });
