@@ -36,6 +36,24 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
             required
           />
         </div>
+        <div>
+          <label className="form-label">Bounty:</label>
+          <input
+            type="number"
+            id="tender-bounty"
+            className="form-input"
+            required
+          />
+        </div>
+        <div>
+          <label className="form-label">Minimum Bid:</label>
+          <input
+            type="number"
+            id="tender-minbid"
+            className="form-input"
+            required
+          />
+        </div>
         <div className="form-buttons">
           <button
             type="button"
@@ -45,13 +63,20 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
               const description = document.getElementById("tender-description").value;
               const date = document.getElementById("tender-date").value;
               const time = document.getElementById("tender-time").value;
+              const bounty = BigInt(document.getElementById("tender-bounty").value);
+              const minBid = BigInt(document.getElementById("tender-minbid").value);
 
-              if (!name || !description || !date || !time) {
+              if (!name || !description || !date || !time || !bounty || !minBid) {
                 alert("All fields are required.");
                 return;
               }
 
-              handleCreateTender(name, description, date, time);
+              if (bounty <= 0 || minBid < 0) {
+                alert("Unacceptable values parsed for bounty and minBid. Please parse acceptable values.");
+                return;
+              }
+ 
+              handleCreateTender(name, description, bounty, minBid, date, time);
               setCurrentPage('home');
               setIsLoggedIn(true);
             }}
