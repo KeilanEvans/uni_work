@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getCurrentAccount, connectWallet, registerUserOnBlockchain } from './web3Utils';
 
 
-const handleRegister = async (username, password, address, setIsLoggedIn) => {
+const handleRegister = async (username, password, address, permission, setIsLoggedIn) => {
   try {
     let account = getCurrentAccount();
 
@@ -20,15 +20,14 @@ const handleRegister = async (username, password, address, setIsLoggedIn) => {
       username,
       password,
       address,
+      permission,
     });
 
     if (response.status === 201) {
       setIsLoggedIn(true);
       console.log("Registering user on the blockchain...");
-      await registerUserOnBlockchain(address);
+      await registerUserOnBlockchain(address, permission);
 
-      console.log("User registered on the blockchain!");
-      
     } else {
       console.error("Unexpected response status:", response.status);
       alert("Failed to register user. Please try again.");
