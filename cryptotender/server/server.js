@@ -66,12 +66,10 @@ async function closeTender(tenderId) {
   }
 }
 
-checkConnection();
-
 async function checkAndCloseExpiredTenders() {
   try {
     const tenders = await contract.methods.getTenders().call(); // Fetch all tenders
-    console.log('Raw tenders:', tenders);
+
 
     const currentTime = Math.floor(Date.now() / 1000); // Get current timestamp in seconds
 
@@ -88,6 +86,8 @@ async function checkAndCloseExpiredTenders() {
     console.error('Error checking and closing expired tenders:', error);
   }
 }
+
+checkConnection();
 
 setInterval(checkAndCloseExpiredTenders, 30000);
 
