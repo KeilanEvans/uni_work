@@ -23,5 +23,10 @@
     "username": "bob",
     "password": "$2b$10$zb4JfGB0q3mEuZKucjOjl.Q52Rh9Kt/nCTFBn4ZKG7kU2dHHj54eG",
     "address": "0x9449A7403e5e9E9b086a65E8cEDf6739669Cc55a"
+  },
+  {
+    "username": "jeff",
+    "password": "$2b$10$zs/dUL4f6lMX8zDT9xsTd.jZQXlLkbf0/6EcPYcYdzTTpOKpG6DtK",
+    "address": "0x25Dd0Cd452C1aF2ad4A9942D873567ba2b8d7Ce0"
   }
 ]
