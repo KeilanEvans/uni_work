@@ -14,11 +14,14 @@ const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
           <select id="bid-tender-id" className="form-input">
-            {tenders.map((tender, index) => (
-              <option key={index} value={tender.id.toString()}>
-                {tender.title} - Current Highest Bid: {web3.utils.fromWei(tender.highestBid, "ether")} ETH
-              </option>
-            ))}
+            {tenders
+              .filter((tender) => tender.isOpen) // Only tenders in the bidding phase
+              .map((tender, index) => (
+                <option key={index} value={tender.id.toString()}>
+                  {tender.title} - Current Highest Bid: {web3.utils.fromWei(tender.highestBid, "ether")} ETH
+                </option>
+              ))
+            }
           </select>
 
         </div>

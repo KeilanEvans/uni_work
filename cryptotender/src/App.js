@@ -16,7 +16,14 @@ import calculateOpenStatus from './utils/calculateOpenStatus';
 import calculateTimeLeftStr from './utils/calculateTimeLeftStr';
 import calculateTimeLeftInt from './utils/calculateTimeLeftInt';
 import handleLogout from './utils/handleLogout.js';
-import { initWeb3, connectWallet, getTenders } from './utils/web3Utils';
+import { 
+  initWeb3, 
+  connectWallet, 
+  getTenders,
+  getCurrentAccount,
+  fromWei,
+  getEthToGbpRate
+ } from './utils/web3Utils';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -29,6 +36,17 @@ function App() {
   const [bids, setBids] = useState({});
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(null); // null, 'register', or 'login'
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  const [ethGbpRate, setEthGbpRate] = useState(null);
+
+
+  useEffect(() => {
+    const fetchRate = async () => {
+      const rate = await getEthToGbpRate();
+      setEthGbpRate(rate);
+    };
+    fetchRate();
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -61,10 +79,24 @@ function App() {
     }
   }
 
+  const convertToGbp = (ethValue) => {
+    return ethGbpRate ? (parseFloat(ethValue) * ethGbpRate).toFixed(2) : "Loading...";
+  }
+
   const handleFormClose = () => {
     setShowForm(null);
   };
 
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+    
+    
   const handleLogoutClick = () => {
     handleLogout(setIsLoggedIn);
     localStorage.removeItem('token');
@@ -140,6 +172,8 @@ function App() {
             <th>Name</th>
             <th>Description</th>
             <th>Votes</th>
+            <th>Highest Bid (ETH)</th>
+            <th>Highest Bid (£ GBP)</th>
             <th>Open Status</th>
             <th>Time Left</th>
           </tr>
@@ -147,10 +181,11 @@ function App() {
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan="6">Loading...</td>
+              <td colSpan="8">Loading...</td>
             </tr>
           ) : tenders.length > 0 ? (
             tenders.map((tender, index) => {
+              const ethValue = fromWei(tender.highestBid.toString()) * 1000000;
               return (
                 <tr
                   key={index}
@@ -161,6 +196,8 @@ function App() {
                   <td>{tender.title}</td>
                   <td>{tender.description || 'N/A'}</td>
                   <td>{tender.votes.toString()}</td>
+                  <td>{ethValue} ETH</td>
+                  <td>{formatCurrency(convertToGbp(ethValue))}</td>
                   <td>{calculateOpenStatus(tender.endTime)}</td>
                   <td
                     className={

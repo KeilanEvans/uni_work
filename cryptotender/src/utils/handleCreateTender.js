@@ -1,4 +1,4 @@
-const handleCreateTender = async (contract, account, setTenders, title, description, endDate, endTime) => {
+const handleCreateTender = async (contract, account, setTenders, title, description, bounty, minimumBid, endDate, endTime) => {
   try {
     // Create start time for tender.
     const startTimeUnix = Math.floor(new Date().getTime() / 1000);
@@ -9,7 +9,7 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
 
     // Add to Blockchain
     await contract.methods
-      .createTender(title, startTimeUnix, endTimeUnix, description)
+      .createTender(title, startTimeUnix, endTimeUnix, bounty, minimumBid, description)
       .send({ from: account });
     
     // Now we need to sync our understanding of the tenders on the blockchain
