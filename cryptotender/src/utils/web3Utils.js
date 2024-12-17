@@ -22,14 +22,16 @@ const setInternalContract = (tenderCon) => {
   contract = tenderCon;
 }
 
-export const registerUserOnBlockchain = async (address) => {
+export const registerUserOnBlockchain = async (address, permission) => {
   try {
     if (!contract || !currentAccount) {
+      console.log("Displaying currentAccount:", currentAccount);
+      console.log("Displaying contract:", contract);
       throw new Error("Wallet not connected or contract not initialised.");
     }
 
     console.log("Registering user on blockchain...");
-    await contract.methods.registerUser(address).send({ from: currentAccount });
+    await contract.methods.registerUser(address, permission).send({ from: currentAccount });
     console.log("User registered on blockchain successfully!");
   } catch (error) {
     console.error("Error registering user on blockchain:", error);
