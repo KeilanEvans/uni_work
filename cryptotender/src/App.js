@@ -87,6 +87,15 @@ function App() {
     setShowForm(null);
   };
 
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+
   return (
     <div className="App">
       <img src={logo} className="App-logo" alt="logo" />
@@ -168,7 +177,7 @@ function App() {
             </tr>
           ) : tenders.length > 0 ? (
             tenders.map((tender, index) => {
-              const ethValue = fromWei(tender.highestBid.toString())
+              const ethValue = fromWei(tender.highestBid.toString()) * 1000000;
               return (
                 <tr
                   key={index}
@@ -180,7 +189,7 @@ function App() {
                   <td>{tender.description || 'N/A'}</td>
                   <td>{tender.votes.toString()}</td>
                   <td>{ethValue} ETH</td>
-                  <td>£{convertToGbp(ethValue)}</td>
+                  <td>{formatCurrency(convertToGbp(ethValue))}</td>
                   <td>{calculateOpenStatus(tender.endTime)}</td>
                   <td
                     className={
