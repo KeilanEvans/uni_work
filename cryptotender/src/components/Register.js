@@ -51,6 +51,7 @@ const Register = ({ setIsLoggedIn }) => {
           <select
             id="permissions"
             name="permission-level"
+            className='form-input'
             value={permission}
             onChange={(e) => setPermission(e.target.value)}
           >
