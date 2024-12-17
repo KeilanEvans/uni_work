@@ -22,5 +22,11 @@
     "password": "$2b$10$wBdn6z4/V7W9q5YXZsCWSusRLxcDwTMAwIWiMJaajhSrTZObcKyLC",
     "address": "0x97d4FD146db534812f6cD23F849D24Aa4BABFf46",
     "permission": "admin"
+  },
+  {
+    "username": "alex",
+    "password": "$2b$10$Up/YYNg3Cfp7vbBQyct1geVW65jHsVvMTGq6.CBIjssCFdOkeiLjS",
+    "address": "0x9449A7403e5e9E9b086a65E8cEDf6739669Cc55a",
+    "permission": "admin"
   }
 ]
