@@ -114,7 +114,6 @@ contract TenderContract {
 
     // Function to register users (only an admin can register users)
     function registerUser(address user, string memory permissionLevel) external onlyRegisteredAdmin {
-        require(msg.sender == owner, "Only the owner can register users.");
         setPermissions(user, permissionLevel);
         registeredUsers.push(user);
     }
@@ -122,7 +121,10 @@ contract TenderContract {
     // Function to create a new tender (only registered users can create tenders)
     function createTender(string memory title, uint256 startTime, uint256 endTime, uint256 bounty, uint256 minBid, string memory description) external payable onlyRegisteredCreator {
         require(startTime < endTime, "Start time must be earlier than end time.");
+        require(msg.value == bounty, "You must send the exact amount in Ether for the bounty.");
+
         uint256 tenderId = tenders.length;
+        
         tenders.push(Tender({
             id: tenderId,
             title: title,
@@ -162,7 +164,7 @@ contract TenderContract {
     }
 
     // Function to revise a bid before bidding time ends
-    function reviseBid(uint256 tenderId) external payable onlyRegisteredBidder tenderOpen(tenderId) {
+    function reviseBid(uint256 tenderId) external payable onlyRegisteredBidder greaterThanMinimum(tenderId, msg.value) tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
         require(bids[tenderId][msg.sender].exists, "No bid placed yet.");
@@ -194,7 +196,7 @@ contract TenderContract {
         tenders[tenderId].votes++;
     }
 
-    // Function to close a tender and finalize the winner (only the tender creator can close the tender)
+    // Function to close a tender and finalize the winner (only an Admin can close the tender)
     function closeTender(uint256 tenderId) external onlyRegisteredAdmin tenderClosed(tenderId) {
         Tender storage tender = tenders[tenderId];
         require(tender.isOpen, "Tender Already closed.");
