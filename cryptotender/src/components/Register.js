@@ -8,14 +8,19 @@ const Register = ({ setIsLoggedIn }) => {
   const [permission, setPermission] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!username || !password || !address || !permission) {
       alert("All fields are required.");
       return;
     }
     console.log("Registering user:", { username, password, address, permission }); // Debugging statement
-    handleRegister(username, password, address, permission, setIsLoggedIn);
-    setIsRegistered(true); // Set isRegistered to true after successful registration
+    
+    try {
+      await handleRegister(username, password, address, permission, setIsLoggedIn);
+      setIsRegistered(true); // Set isRegistered to true after successful registration
+    } catch (error) {
+      console.error("Registration failed:", error)
+    }
   };
 
   return (
