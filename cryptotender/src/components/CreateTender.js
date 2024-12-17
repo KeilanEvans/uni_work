@@ -5,26 +5,48 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
   const [bounty, setBounty] = useState(0);
   const [ethToGbp, setEthToGbp] = useState("0.00");
   const [minBid, setMinBid] = useState(0);
+  const [bidEthToGbp, setBidEthToGbp] = useState("0.00");
 
   useEffect(() => {
-    const updateGbpValue = async () => {
+    const updateBountyGbpValue = async () => {
       if (!bounty || bounty <= 0) {
         setEthToGbp("0.00"); // Reset when no input or invalid input
         return;
       }
-  
+
       try {
-        const rate = await getEthToGbpRate(); // Fetch the latest ETH-to-GBP rate
-        const converted = (parseFloat(bounty) * rate).toFixed(2); // Multiply & format
+        const rate = await getEthToGbpRate(); // Fetch ETH-GBP rate
+        const converted = (parseFloat(bounty) * rate).toFixed(2); // Convert to GBP
         setEthToGbp(`${converted}`);
       } catch (error) {
-        console.error("Error fetching GBP rate:", error);
+        console.error("Error fetching GBP rate for Bounty:", error);
         setEthToGbp("Error");
       }
     };
-  
-    updateGbpValue(); // Call the function whenever bounty changes
+
+    updateBountyGbpValue();
   }, [bounty]);
+
+  // Update GBP equivalent for Minimum Bid field
+  useEffect(() => {
+    const updateMinBidGbpValue = async () => {
+      if (!minBid || minBid <= 0) {
+        setBidEthToGbp("0.00"); // Reset when no input or invalid input
+        return;
+      }
+
+      try {
+        const rate = await getEthToGbpRate(); // Fetch ETH-GBP rate
+        const converted = (parseFloat(minBid) * rate).toFixed(2); // Convert to GBP
+        setBidEthToGbp(`${converted}`);
+      } catch (error) {
+        console.error("Error fetching GBP rate for Minimum Bid:", error);
+        setBidEthToGbp("Error");
+      }
+    };
+
+    updateMinBidGbpValue();
+  }, [minBid]);
   
   return (
     <div className="create-tender-container">
@@ -84,7 +106,15 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
             type="number"
             id="tender-minbid"
             className="form-input"
+            onChange={(e) => setMinBid(e.target.value)}
             required
+          />
+          <input
+            type="text"
+            id="tender-minbid-gbp"
+            className="form-input"
+            value={`£${bidEthToGbp}`}
+            readOnly
           />
         </div>
         <div className="form-buttons">
