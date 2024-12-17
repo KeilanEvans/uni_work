@@ -20,7 +20,9 @@ import {
   initWeb3, 
   connectWallet, 
   getTenders,
-  getCurrentAccount
+  getCurrentAccount,
+  fromWei,
+  getEthToGbpRate
  } from './utils/web3Utils';
 
 function App() {
@@ -35,6 +37,16 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(null); // null, 'register', or 'login'
   const [currentTime, setCurrentTime] = useState(Date.now());
+  const [ethGbpRate, setEthGbpRate] = useState(null);
+
+
+  useEffect(() => {
+    const fetchRate = async () => {
+      const rate = await getEthToGbpRate();
+      setEthGbpRate(rate);
+    };
+    fetchRate();
+  }, []);
 
   // Hook to initialise web3 connection and connect to MetaMask Wallet
   useEffect(() => { 
@@ -65,6 +77,10 @@ function App() {
     } catch (error) {
       console.error("Error voting:", error.message || error.toString());
     }
+  }
+
+  const convertToGbp = (ethValue) => {
+    return ethGbpRate ? (parseFloat(ethValue) * ethGbpRate).toFixed(2) : "Loading...";
   }
 
   const handleFormClose = () => {
@@ -139,6 +155,8 @@ function App() {
             <th>Name</th>
             <th>Description</th>
             <th>Votes</th>
+            <th>Highest Bid (ETH)</th>
+            <th>Highest Bid (£ GBP)</th>
             <th>Open Status</th>
             <th>Time Left</th>
           </tr>
@@ -146,10 +164,11 @@ function App() {
         <tbody>
           {loading ? (
             <tr>
-              <td colSpan="6">Loading...</td>
+              <td colSpan="8">Loading...</td>
             </tr>
           ) : tenders.length > 0 ? (
             tenders.map((tender, index) => {
+              const ethValue = fromWei(tender.highestBid.toString())
               return (
                 <tr
                   key={index}
@@ -160,6 +179,8 @@ function App() {
                   <td>{tender.title}</td>
                   <td>{tender.description || 'N/A'}</td>
                   <td>{tender.votes.toString()}</td>
+                  <td>{ethValue} ETH</td>
+                  <td>£{convertToGbp(ethValue)}</td>
                   <td>{calculateOpenStatus(tender.endTime)}</td>
                   <td
                     className={
