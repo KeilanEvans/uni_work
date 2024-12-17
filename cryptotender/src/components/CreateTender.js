@@ -3,52 +3,76 @@ import { getEthToGbpRate } from '../utils/web3Utils';
 import FormContainer from './FormContainer';
 
 const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => {
-  const [bounty, setBounty] = useState(0);
+  const [bounty, setBounty] = useState('');
   const [ethToGbp, setEthToGbp] = useState("0.00");
-  const [minBid, setMinBid] = useState(0);
+  const [minBid, setMinBid] = useState('');
   const [bidEthToGbp, setBidEthToGbp] = useState("0.00");
+  const [ethGbpRate, setEthGbpRate] = useState(null);
+  const [rateError, setRateError] = useState(null);
 
+  // Fetch ETH to GBP rate once when component mounts
   useEffect(() => {
-    const updateBountyGbpValue = async () => {
-      if (!bounty || bounty <= 0) {
-        setEthToGbp("0.00"); // Reset when no input or invalid input
-        return;
-      }
-
+    const fetchRate = async () => {
       try {
-        const rate = await getEthToGbpRate(); // Fetch ETH-GBP rate
-        const converted = (parseFloat(bounty) * rate).toFixed(2); // Convert to GBP
-        setEthToGbp(`${converted}`);
+        const rate = await getEthToGbpRate();
+        setEthGbpRate(rate);
       } catch (error) {
-        console.error("Error fetching GBP rate for Bounty:", error);
-        setEthToGbp("Error");
+        console.error("Error fetching ETH to GBP rate:", error);
+        setRateError("Failed to fetch ETH to GBP rate. Please try again later.");
       }
     };
+    fetchRate();
+  }, []);
 
-    updateBountyGbpValue();
-  }, [bounty]);
+  // Update GBP equivalent for Bounty field
+  useEffect(() => {
+    if (ethGbpRate && bounty > 0) {
+      const converted = (parseFloat(bounty) * ethGbpRate).toFixed(2);
+      setEthToGbp(converted);
+    } else {
+      setEthToGbp("0.00");
+    }
+  }, [bounty, ethGbpRate]);
 
   // Update GBP equivalent for Minimum Bid field
   useEffect(() => {
-    const updateMinBidGbpValue = async () => {
-      if (!minBid || minBid <= 0) {
-        setBidEthToGbp("0.00"); // Reset when no input or invalid input
-        return;
-      }
+    if (ethGbpRate && minBid > 0) {
+      const converted = (parseFloat(minBid) * ethGbpRate).toFixed(2);
+      setBidEthToGbp(converted);
+    } else {
+      setBidEthToGbp("0.00");
+    }
+  }, [minBid, ethGbpRate]);
 
-      try {
-        const rate = await getEthToGbpRate(); // Fetch ETH-GBP rate
-        const converted = (parseFloat(minBid) * rate).toFixed(2); // Convert to GBP
-        setBidEthToGbp(`${converted}`);
-      } catch (error) {
-        console.error("Error fetching GBP rate for Minimum Bid:", error);
-        setBidEthToGbp("Error");
-      }
-    };
+  const handleSubmit = () => {
+    const name = document.getElementById("tender-name").value.trim();
+    const description = document.getElementById("tender-description").value.trim();
+    const date = document.getElementById("tender-date").value;
+    const time = document.getElementById("tender-time").value;
+    const bountyValue = Number(document.getElementById("tender-bounty").value);
+    const minBidValue = Number(document.getElementById("tender-minbid").value);
 
-    updateMinBidGbpValue();
-  }, [minBid]);
-  
+    // Validation
+    if (!name || !description || !date || !time || !bountyValue || !minBidValue) {
+      alert("All fields are required.");
+      return;
+    }
+
+    if (bountyValue <= 0 || minBidValue < 0) {
+      alert("Unacceptable values parsed for bounty and minBid. Please enter acceptable values.");
+      return;
+    }
+
+    if (!ethGbpRate) {
+      alert("ETH to GBP rate not available. Please try again later.");
+      return;
+    }
+
+    handleCreateTender(name, description, bountyValue, minBidValue, date, time);
+    setCurrentPage('home');
+    setIsLoggedIn(true);
+  };
+
   return (
     <FormContainer
       title="Create a New Tender"
@@ -57,59 +81,92 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
         setIsLoggedIn(true);
       }}
     >
-      <form className="tender-form">
+      <form className="tender-form" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group">
           <label className="form-label">Tender Name:</label>
-          <input type="text" id="tender-name" className="form-input" required />
+          <input 
+            type="text" 
+            id="tender-name" 
+            className="form-input" 
+            required 
+            placeholder="Enter tender name"
+          />
         </div>
         <div className="form-group">
           <label className="form-label">Description:</label>
-          <textarea id="tender-description" className="form-input form-textarea"></textarea>
+          <textarea 
+            id="tender-description" 
+            className="form-input form-textarea" 
+            placeholder="Enter tender description"
+          ></textarea>
         </div>
         <div className="form-group-inline">
           <div className="form-group">
             <label className="form-label">Close Date:</label>
-            <input type="date" id="tender-date" className="form-input" required />
+            <input 
+              type="date" 
+              id="tender-date" 
+              className="form-input" 
+              required 
+            />
           </div>
           <div className="form-group">
             <label className="form-label">Close Time:</label>
-            <input type="time" id="tender-time" className="form-input" required />
+            <input 
+              type="time" 
+              id="tender-time" 
+              className="form-input" 
+              required 
+            />
           </div>
         </div>
-        <div>
-          <label className="form-label">Bounty (ETH):</label>
-          <input
-            type="number"
-            id="tender-bounty"
-            className="form-input"
-            onChange={(e) => setBounty(e.target.value)}
-            required
-          />
-          <input
-            type="text"
-            id="tender-bounty-gbp"
-            className="form-input"
-            value={`£${ethToGbp}`}
-            readOnly
-          />
+        <div className="form-group-inline">
+          <div>
+            <label className="form-label">Bounty (ETH):</label>
+            <input
+              type="number"
+              id="tender-bounty"
+              className="form-input"
+              value={bounty}
+              onChange={(e) => setBounty(e.target.value)}
+              required
+              placeholder="e.g. 1.5"
+            />
+            <input
+              type="text"
+              id="tender-bounty-gbp"
+              className="form-input"
+              value={`£${ethToGbp}`}
+              readOnly
+              placeholder="GBP equivalent"
+            />
+          </div>
+          <div>
+            <label className="form-label">Minimum Bid (ETH):</label>
+            <input
+              type="number"
+              id="tender-minbid"
+              className="form-input"
+              value={minBid}
+              onChange={(e) => setMinBid(e.target.value)}
+              required
+              placeholder="e.g. 0.5"
+            />
+            <input
+              type="text"
+              id="tender-minbid-gbp"
+              className="form-input"
+              value={`£${bidEthToGbp}`}
+              readOnly
+              placeholder="GBP equivalent"
+            />
+          </div>
         </div>
-        <div>
-          <label className="form-label">Minimum Bid (ETH):</label>
-          <input
-            type="number"
-            id="tender-minbid"
-            className="form-input"
-            onChange={(e) => setMinBid(e.target.value)}
-            required
-          />
-          <input
-            type="text"
-            id="tender-minbid-gbp"
-            className="form-input"
-            value={`£${bidEthToGbp}`}
-            readOnly
-          />
-        </div>
+        {rateError && (
+          <div className="error-message">
+            {rateError}
+          </div>
+        )}
         <div className="form-buttons">
           <button
             type="button"
@@ -138,13 +195,17 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
               setCurrentPage('home');
               setIsLoggedIn(true);
             }}
+            onClick={handleSubmit}
           >
             Create Tender
           </button>
           <button
             type="button"
             className="button back-button"
-            onClick={() => setCurrentPage('home')}
+            onClick={() => {
+              setCurrentPage('home');
+              setIsLoggedIn(true);
+            }}
           >
             Back to Home
           </button>

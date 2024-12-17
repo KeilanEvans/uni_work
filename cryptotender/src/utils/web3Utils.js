@@ -41,6 +41,16 @@ const setInternalContract = (tenderCon) => {
   contract = tenderCon;
 }
 
+export const getBids = async (contract, account) => {
+  try {
+    const [tenderIds, bidAmounts] = await contract.methods.getBids(account).call();
+    return { tenderIds, bidAmounts };
+  } catch (error) {
+    console.error("Error fetching bids:", error);
+    throw error;
+  }
+}
+
 export const registerUserOnBlockchain = async (address, permission) => {
   try {
     if (!contract || !currentAccount) {
@@ -76,6 +86,16 @@ export const getTenders = async (contract, setLoading, setTenders) => {
     setLoading(false);
   }
 };
+
+export const getBidAmount = async (tenderId, account) => {
+  try {
+    const amount = await contract.methods.getBidAmount(tenderId, account).call();
+    return amount;
+  } catch (error) {
+    console.error(`Error fetching bid amount for tenderId ${tenderId}:`, error);
+    throw error;
+  }
+}
 
 export const connectWallet = async () => {
   // Prevent multiple wallet connection requests
@@ -175,4 +195,6 @@ export const initWeb3 = async (setWeb3, setAccount, setContract, setLoading, set
   } catch (error) {
     console.error("Error connecting to Web3:", error);
   }
+
+  
 };

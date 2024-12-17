@@ -22,7 +22,8 @@ import {
   getTenders,
   getCurrentAccount,
   fromWei,
-  getEthToGbpRate
+  getEthToGbpRate,
+  getBids
  } from './utils/web3Utils';
 
 function App() {
@@ -34,7 +35,7 @@ function App() {
   const [web3, setWeb3] = useState(null);
   const [account, setAccount] = useState("");
   const [bids, setBids] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState({ tenderIds: [], bidAmounts: [] });
   const [showForm, setShowForm] = useState(null); // null, 'register', or 'login'
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [ethGbpRate, setEthGbpRate] = useState(null);
@@ -47,6 +48,16 @@ function App() {
     };
     fetchRate();
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (contract && account) {
+        const fetchedBids = await getBids(contract, account);
+        setBids(fetchedBids);
+      }
+    };
+    fetchData();
+  }, [contract, account])
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -120,7 +131,6 @@ function App() {
           <ul className="button-list">
             <li><button className="button" onClick={() => setShowForm('register')}>Register</button></li>
             <li><button className="button" onClick={() => setShowForm('login')}>Log In</button></li>
-            <li><button className="button" onClick={() => setCurrentPage('vote')}>Vote</button></li>
           </ul>
         )}
       </header>
