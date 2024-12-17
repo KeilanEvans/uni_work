@@ -122,6 +122,8 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
               const bounty = Number(document.getElementById("tender-bounty").value);
               const minBid = Number(document.getElementById("tender-minbid").value);
 
+              console.log("Form values:", { name, description, date, time, bounty, minBid });
+
               if (!name || !description || !date || !time || !bounty || !minBid) {
                 alert("All fields are required.");
                 return;
@@ -131,7 +133,7 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
                 alert("Unacceptable values parsed for bounty and minBid. Please parse acceptable values.");
                 return;
               }
- 
+
               handleCreateTender(name, description, bounty, minBid, date, time);
               setCurrentPage('home');
               setIsLoggedIn(true);
