@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import handleRegister from '../utils/handleRegister';
+import FormContainer from './FormContainer';
 
-const Register = ({ setIsLoggedIn }) => {
+const Register = ({ setIsLoggedIn, setCurrentPage }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [address, setAddress] = useState('');
@@ -24,7 +25,13 @@ const Register = ({ setIsLoggedIn }) => {
   };
 
   return (
-    <div class="form-container">
+    <FormContainer
+      title="Register"
+      onClose={() => {
+        setCurrentPage('home');
+        setIsLoggedIn(false);
+      }}
+    >
       {isRegistered ? (
         <h1>Registration Successful!</h1>
       ) : (
@@ -63,7 +70,7 @@ const Register = ({ setIsLoggedIn }) => {
           <button onClick={handleSubmit}>Register</button>
         </>
       )}
-    </div>
+    </FormContainer>
   );
 };
 

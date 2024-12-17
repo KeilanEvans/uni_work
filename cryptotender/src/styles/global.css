@@ -1,0 +1,57 @@
+.App {
+    text-align: center;
+    background-color: #282c34;
+  }
+  
+  .App-spacer {
+    height: 3vmin;
+  }
+  
+  .App-logo {
+    height: 15vmin;
+    pointer-events: none;
+    animation: App-logo-spin infinite 20s linear;
+  }
+  
+  .current-tenders-title {
+    color: #fff;
+    font-size: 2rem;
+    margin: 20px 0;
+  }
+  
+  .App-header {
+    background-color: #282c34;
+    min-height: 10vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .App-table-title {
+    color: white;
+  }
+  
+  .App-table {
+    width: 80%;
+    margin: 20px auto;
+    background-color: #282c34;
+    color: rgb(255, 255, 255);
+    text-align: left;
+    border-collapse: collapse;
+    display: table;
+    min-height: 50vh;
+  }
+  
+  .App-table th, .App-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+  }
+  
+  @keyframes App-logo-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
