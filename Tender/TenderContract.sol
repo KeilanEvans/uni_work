@@ -12,6 +12,7 @@ contract TenderContract {
         uint256 endTime;            // End time of the tender
         string description;         // Description of what the tender involves
         uint256 bounty;             // Reward that government is willing to pay highestBidder
+        uint256 minimumBid;         // The 'reserve' or minimum the government are willing for tender to sell for
         uint256 highestBid;         // Highest bid amount received for the tender
         address highestBidder;      // Address of the highest bidder
         bool isOpen;                // Status of the tender (open or closed)
@@ -30,7 +31,7 @@ contract TenderContract {
     Tender[] public tenders;       // Array to store all tenders
     uint256 public tenderTotalCount; 
     address[] private registeredUsers;
-    
+
     mapping(string => bool[4]) private permissions;
     mapping(address => bool[4]) public userRegistry; // Mapping to store registered users
     mapping(uint256 => mapping(address => Bid)) public bids; // Mapping from tender ID to bids by address
@@ -79,6 +80,12 @@ contract TenderContract {
         require(block.timestamp >= tenders[tenderId].endTime, "Tender is still open.");
         _;
     }
+
+
+    modifier greaterThanMinimum(uint256 tenderId, uint256 bid) {
+        require(bid > tenders[tenderId].minimumBid, "Your bid did not breach the reserve price.");
+        _;
+    }
     
     // Constructor to initialize the contract owner
     constructor() {
@@ -113,7 +120,7 @@ contract TenderContract {
     }
 
     // Function to create a new tender (only registered users can create tenders)
-    function createTender(string memory title, uint256 startTime, uint256 endTime, string memory description) external payable onlyRegisteredCreator {
+    function createTender(string memory title, uint256 startTime, uint256 endTime, uint256 bounty, uint256 minBid, string memory description) external payable onlyRegisteredCreator {
         require(startTime < endTime, "Start time must be earlier than end time.");
         uint256 tenderId = tenders.length;
         tenders.push(Tender({
@@ -123,7 +130,8 @@ contract TenderContract {
             startTime: startTime,
             endTime: endTime,
             description: description,
-            bounty: msg.value,
+            bounty: bounty,
+            minimumBid: minBid,
             highestBid: 0,
             highestBidder: address(0),
             isOpen: true,
@@ -134,7 +142,7 @@ contract TenderContract {
     }
 
     // Function to place a bid on a tender (only registered users can place bids on open tenders)
-    function placeBid(uint256 tenderId) external payable onlyRegisteredBidder tenderOpen(tenderId) {
+    function placeBid(uint256 tenderId) external payable onlyRegisteredBidder greaterThanMinimum(tenderId, msg.value) tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
         require(block.timestamp >= tender.startTime, "Bidding hasn't started yet.");
@@ -261,6 +269,8 @@ contract TenderContract {
         uint256 startTime, 
         uint256 endTime, 
         string memory description,
+        uint256 bounty,
+        uint256 minimumBid,
         uint256 highestBid, 
         address highestBidder, 
         bool isOpen,
@@ -274,6 +284,8 @@ contract TenderContract {
             tender.startTime,
             tender.endTime,
             tender.description,
+            tender.bounty,
+            tender.minimumBid,
             tender.highestBid,
             tender.highestBidder,
             tender.isOpen,
