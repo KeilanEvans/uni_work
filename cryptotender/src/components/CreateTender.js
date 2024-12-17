@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { getEthToGbpRate } from '../utils/web3Utils';
-import React from 'react';
 import FormContainer from './FormContainer';
 
 const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => {

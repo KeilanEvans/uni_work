@@ -95,7 +95,7 @@ function App() {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);
-    
+  }
     
   const handleLogoutClick = () => {
     handleLogout(setIsLoggedIn);
