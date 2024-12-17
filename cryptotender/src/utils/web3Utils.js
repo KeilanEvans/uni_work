@@ -1,5 +1,6 @@
 import Web3 from 'web3';
 import abi from '../abi.json';
+import axios from 'axios';
 
 // Web3 contract details
 const CONTRACT_ABI = abi;
@@ -12,6 +13,22 @@ let contract = null;
 
 // Getter for currentAccount
 export const getCurrentAccount = () => currentAccount;
+
+export const fromWei = (value) => {
+  return Web3.utils.fromWei(value, 'ether');
+}
+
+export const getEthToGbpRate = async () => {
+  try {
+    const response = await axios.get(
+      'https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=gbp'
+    );
+    return response.data.ethereum.gbp; // Extract the ETH price in GBP
+  } catch (error) {
+    console.error("Error fetching ETH/GBP rate:", error);
+    return null;
+  }
+};
 
 // Setter for currentAccount
 const setCurrentAccount = (account) => {
