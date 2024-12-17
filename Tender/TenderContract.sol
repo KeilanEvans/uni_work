@@ -149,7 +149,7 @@ contract TenderContract {
     }
 
     // Function to close a tender and finalize the winner (only the tender creator can close the tender)
-    function closeTender(uint256 tenderId) external onlyTenderCreator(tenderId) tenderClosed(tenderId) {
+    function closeTender(uint256 tenderId) external onlyRegisteredUser tenderClosed(tenderId) {
         Tender storage tender = tenders[tenderId];
         require(tender.isOpen, "Tender Already closed.");
         tender.isOpen = false;
