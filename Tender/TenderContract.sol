@@ -29,6 +29,8 @@ contract TenderContract {
     address public owner;          // Address of the contract owner
     Tender[] public tenders;       // Array to store all tenders
     uint256 public tenderTotalCount; 
+    address[] private registeredUsers;
+    mapping(address => bool) public creatorRegistry;
     mapping(address => bool) public userRegistry; // Mapping to store registered users
     mapping(uint256 => mapping(address => Bid)) public bids; // Mapping from tender ID to bids by address
     mapping(uint256 => mapping(address => bool)) public votes; // Mapping from tender ID to votes by address
@@ -37,6 +39,12 @@ contract TenderContract {
     // Modifier to restrict functions to only registered users
     modifier onlyRegisteredUser() {
         require(userRegistry[msg.sender], "You are not a registered user.");
+        _;
+    }
+    
+    // Modifier to restrict functions to only registered creators
+    modifier onlyRegisteredCreator() {
+        require(creatorRegistry[msg.sender], "You are not a registered creator.");
         _;
     }
 
@@ -63,6 +71,7 @@ contract TenderContract {
         owner = msg.sender;
     }
 
+    // Returns the number of bids on a given tenderId
     function getBidCount(uint256 tenderId) external view returns(uint256) {
         return bidCountPerTender[tenderId];
     }
@@ -71,6 +80,7 @@ contract TenderContract {
     function registerUser(address user) external {
         require(msg.sender == owner, "Only the owner can register users.");
         userRegistry[user] = true;
+        registeredUsers.push(user);
     }
 
     // Function to create a new tender (only registered users can create tenders)
@@ -159,7 +169,7 @@ contract TenderContract {
         uint256 bounty = tender.bounty;
 
 
-        // The creator (Government/Local Council) receives the highest bid
+        // The creator (Government, Local Council, Contractor) receives the highest bid
         if (winner != address(0) && winningBid > 0) {
             payable(tender.creator).transfer(winningBid);
         }
@@ -173,6 +183,8 @@ contract TenderContract {
         if (bidCountPerTender[tenderId] == 0) {
             payable(tender.creator).transfer(bounty);
         }
+
+        // It is safe to assume that if no bids were made, the winning bid = 0 so no need to account for that
 
         emit TenderClosed(tenderId, winner, winningBid, bounty);
     }
