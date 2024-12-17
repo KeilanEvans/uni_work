@@ -8,6 +8,7 @@ const CONTRACT_ADDRESS = "0xdc5899a331817b3c9f122dd745447528968eeb6d";
 // State variables
 let isRequestPending = false;
 let currentAccount = null;
+let contract = null;
 
 // Getter for currentAccount
 export const getCurrentAccount = () => currentAccount;
@@ -15,6 +16,25 @@ export const getCurrentAccount = () => currentAccount;
 // Setter for currentAccount
 const setCurrentAccount = (account) => {
   currentAccount = account;
+}
+
+const setInternalContract = (tenderCon) => {
+  contract = tenderCon;
+}
+
+export const registerUserOnBlockchain = async (address) => {
+  try {
+    if (!contract || !currentAccount) {
+      throw new Error("Wallet not connected or contract not initialised.");
+    }
+
+    console.log("Registering user on blockchain...");
+    await contract.methods.registerUser(address).send({ from: currentAccount });
+    console.log("User registered on blockchain successfully!");
+  } catch (error) {
+    console.error("Error registering user on blockchain:", error);
+    throw error;
+  }
 }
 
 export const getTenders = async (contract, setLoading, setTenders) => {
@@ -115,6 +135,7 @@ export const initWeb3 = async (setWeb3, setAccount, setContract, setLoading, set
     setWeb3(web3Instance);
     setAccount(accounts[0]);
     setContract(tenderContract);
+    setInternalContract(tenderContract);
 
     setCurrentAccount(accounts[0])
     console.log("Connected to blockchain with account:", getCurrentAccount());
