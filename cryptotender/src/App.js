@@ -220,6 +220,7 @@ function App() {
       </table>
     </div>
   );
+ };
 };
 
 export default App;
