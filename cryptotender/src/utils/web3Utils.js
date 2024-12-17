@@ -1,10 +1,21 @@
 import Web3 from 'web3';
 import abi from '../abi.json';
 
+// Web3 contract details
 const CONTRACT_ABI = abi;
 const CONTRACT_ADDRESS = "0xdc5899a331817b3c9f122dd745447528968eeb6d";
 
+// State variables
 let isRequestPending = false;
+let currentAccount = null;
+
+// Getter for currentAccount
+export const getCurrentAccount = () => currentAccount;
+
+// Setter for currentAccount
+const setCurrentAccount = (account) => {
+  currentAccount = account;
+}
 
 export const getTenders = async (contract, setLoading, setTenders) => {
   if (!contract) {
@@ -26,27 +37,58 @@ export const getTenders = async (contract, setLoading, setTenders) => {
 };
 
 export const connectWallet = async () => {
+  // Prevent multiple wallet connection requests
   if (isRequestPending) {
     console.log("Request already pending...");
-    return;
+    return currentAccount;
   }
 
   try {
+    // Set request pending incase of future requests during unfilled promises
     isRequestPending = true;
 
+    // Check if MetaMask is available
+    if (!window.ethereum) {
+      console.error("MetaMask is not installed. Please install it to use this feature.");
+      return null;
+    }
+
+    // Request account access from MetaMask
     const accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
 
-    console.log("Wallet connected:", accounts[0]);
-    return accounts[0];
+    // Assign default current account and handle basic errors
+    if (accounts.length > 0) {
+      currentAccount = accounts[0];
+      console.log("Wallet connected:", currentAccount);
+    } else {
+      console.warn("No accounts returned by MetaMask.");
+      currentAccount = null;
+    }
+
+    return getCurrentAccount();
+
   } catch (error) {
-    console.error("Failed to connect wallet:", error);
+    console.error("Failed to connect wallet:", error.message || error);
     return null;
+
   } finally {
     isRequestPending = false;
   }
 };
+
+// Event listener for changing metamask accounts
+window.ethereum?.on("accountsChanged", (accounts) => {
+  if (accounts.length > 0) {
+    setCurrentAccount(accounts[0]);
+    console.log("Account switched:", currentAccount);
+
+  } else {
+    console.warn("MetaMask disconnected. No accounts available.");
+    setCurrentAccount(null);
+  }
+});
 
 export const initWeb3 = async (setWeb3, setAccount, setContract, setLoading, setTenders, setBids) => {
   try {
@@ -74,7 +116,8 @@ export const initWeb3 = async (setWeb3, setAccount, setContract, setLoading, set
     setAccount(accounts[0]);
     setContract(tenderContract);
 
-    console.log("Connected to blockchain with account:", accounts[0]);
+    setCurrentAccount(accounts[0])
+    console.log("Connected to blockchain with account:", getCurrentAccount());
 
     if (!tenderContract) {
       throw new Error("Issue: Contract not initialised properly!");

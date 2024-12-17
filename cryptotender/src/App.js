@@ -16,7 +16,12 @@ import calculateOpenStatus from './utils/calculateOpenStatus';
 import calculateTimeLeftStr from './utils/calculateTimeLeftStr';
 import calculateTimeLeftInt from './utils/calculateTimeLeftInt';
 import handleLogout from './utils/handleLogout.js';
-import { initWeb3, connectWallet, getTenders } from './utils/web3Utils';
+import { 
+  initWeb3, 
+  connectWallet, 
+  getTenders,
+  getCurrentAccount
+ } from './utils/web3Utils';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
