@@ -30,6 +30,7 @@ contract TenderContract {
     Tender[] public tenders;       // Array to store all tenders
     uint256 public tenderTotalCount; 
     address[] private registeredUsers;
+    
     mapping(string => bool[4]) private permissions;
     mapping(address => bool[4]) public userRegistry; // Mapping to store registered users
     mapping(uint256 => mapping(address => Bid)) public bids; // Mapping from tender ID to bids by address
@@ -52,7 +53,12 @@ contract TenderContract {
     }
 
     modifier onlyRegisteredAdmin() {
-        require(userRegistry[msg.sender][3], "You are not a registered Admin.")
+        require(userRegistry[msg.sender][3], "You are not a registered Admin.");
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(owner == msg.sender);
         _;
     }
 
@@ -84,15 +90,25 @@ contract TenderContract {
         permissions["admin"] = [true, true, true, true];
     }
 
+    //
+    function setAdminPermissions(address user) external onlyOwner {
+        userRegistry[user] = permissions["admin"];
+    }
+
+    // Sets permissions of a given user to a certain level
+    function setPermissions(address user, string memory permissionLevel) private onlyRegisteredAdmin {
+        userRegistry[user] = permissions[permissionLevel];
+    }
+
     // Returns the number of bids on a given tenderId
     function getBidCount(uint256 tenderId) external view returns(uint256) {
         return bidCountPerTender[tenderId];
     }
 
-    // Function to register users (only the owner can register users)
-    function registerUser(address user) external {
+    // Function to register users (only an admin can register users)
+    function registerUser(address user, string memory permissionLevel) external onlyRegisteredAdmin {
         require(msg.sender == owner, "Only the owner can register users.");
-        userRegistry[user] = true;
+        setPermissions(user, permissionLevel);
         registeredUsers.push(user);
     }
 
@@ -118,7 +134,7 @@ contract TenderContract {
     }
 
     // Function to place a bid on a tender (only registered users can place bids on open tenders)
-    function placeBid(uint256 tenderId) external payable tenderOpen(tenderId) {
+    function placeBid(uint256 tenderId) external payable onlyRegisteredBidder tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
         require(block.timestamp >= tender.startTime, "Bidding hasn't started yet.");
@@ -139,7 +155,7 @@ contract TenderContract {
     }
 
     // Function to revise a bid before bidding time ends
-    function reviseBid(uint256 tenderId) external payable tenderOpen(tenderId) {
+    function reviseBid(uint256 tenderId) external payable onlyRegisteredBidder tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
         require(bids[tenderId][msg.sender].exists, "No bid placed yet.");
