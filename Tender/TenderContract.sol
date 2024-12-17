@@ -237,30 +237,39 @@ contract TenderContract {
     }
 
     // Function to get all TenderIDs a user has bid on
-    function getBids(address account) external view returns (uint256[] memory) {
-        uint256 count = 0;
+    function getBids(address account) external view returns (uint256[] memory, uint256[] memory) {
+    uint256 count = 0;
 
-        // Count how many bids exist for the account
-        for (uint256 i = 0; i < tenders.length; i++) {
-            if (bids[i][account].exists) {
-                count++;
-            }
+    // Count how many bids exist for the account
+    for (uint256 i = 0; i < tenders.length; i++) {
+        if (bids[i][account].exists) {
+            count++;
         }
-
-        // Create an array of the appropriate size
-        uint256[] memory temp = new uint256[](count);
-        uint256 index = 0;
-
-        // Add tenderIDs to the array
-        for (uint256 i = 0; i < tenders.length; i++) {
-            if (bids[i][account].exists) {
-                temp[index] = i; // Add the tenderID
-                index++;
-            }
-        }
-
-        return temp;
     }
+
+    // Create arrays of the appropriate size
+    uint256[] memory tenderIds = new uint256[](count);
+    uint256[] memory bidAmounts = new uint256[](count);
+    uint256 index = 0;
+
+    // Populate the arrays with tenderIDs and bid amounts
+    for (uint256 i = 0; i < tenders.length; i++) {
+        if (bids[i][account].exists) {
+            tenderIds[index] = i; // Add the tenderID
+            bidAmounts[index] = bids[i][account].amount; // Add the bid amount
+            index++;
+        }
+    }
+
+    return (tenderIds, bidAmounts);
+
+    }
+
+    function getBidAmount(uint256 tenderId, address account) external view returns (uint256) {
+    require(tenderId < tenders.length, "Invalid tenderId");
+    require(bids[tenderId][account].exists, "Bid does not exist");
+    return bids[tenderId][account].amount;
+}
 
     // Function to get the details of a tender
     function getTender(uint256 tenderId) external view returns (
