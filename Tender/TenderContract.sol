@@ -148,17 +148,16 @@ contract TenderContract {
         require(block.timestamp >= tender.startTime, "Bidding hasn't started yet.");
         require(block.timestamp <= tender.endTime, "Bidding time is over.");
         require(!bids[tenderId][msg.sender].exists, "You have already placed a bid.");
-        
+        require(msg.value > tender.highestBid, "Your bid must be greater than the current highest bid.");
+
         bids[tenderId][msg.sender] = Bid({
             amount: msg.value,
             exists: true
         });
 
-        if (msg.value > tender.highestBid) {
-            tender.highestBid = msg.value;
-            tender.highestBidder = msg.sender;
-        }
-
+        tender.highestBid = msg.value;
+        tender.highestBidder = msg.sender;
+        
         bidCountPerTender[tenderId] += 1;
     }
 
