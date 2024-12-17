@@ -14,10 +14,12 @@ let contract = null;
 // Getter for currentAccount
 export const getCurrentAccount = () => currentAccount;
 
+// Function to convert from Wei to ETH
 export const fromWei = (value) => {
   return Web3.utils.fromWei(value, 'ether');
 }
 
+// Function to get GBP equivalent of ETH at current exchange rate
 export const getEthToGbpRate = async () => {
   try {
     const response = await axios.get(
