@@ -30,14 +30,29 @@ contract TenderContract {
     Tender[] public tenders;       // Array to store all tenders
     uint256 public tenderTotalCount; 
     address[] private registeredUsers;
-    mapping(address => bool) public userRegistry; // Mapping to store registered users
+    mapping(string => bool[4]) private permissions;
+    mapping(address => bool[4]) public userRegistry; // Mapping to store registered users
     mapping(uint256 => mapping(address => Bid)) public bids; // Mapping from tender ID to bids by address
     mapping(uint256 => mapping(address => bool)) public votes; // Mapping from tender ID to votes by address
     mapping(uint256 => uint256) public bidCountPerTender; // Keep track of number of bids for each tender
 
-    // Modifier to restrict functions to only registered users
-    modifier onlyRegisteredUser() {
-        require(userRegistry[msg.sender], "You are not a registered user.");
+    modifier onlyRegisteredVoter() {
+        require(userRegistry[msg.sender][0], "You are not a registered voter.");
+        _;
+    }
+
+    modifier onlyRegisteredBidder() {
+        require(userRegistry[msg.sender][1], "You are not a registered contractor");
+        _;
+    }
+
+    modifier onlyRegisteredCreator() {
+        require(userRegistry[msg.sender][2], "You are not a registered Council.");
+        _;
+    }
+
+    modifier onlyRegisteredAdmin() {
+        require(userRegistry[msg.sender][3], "You are not a registered Admin.")
         _;
     }
 
@@ -58,10 +73,15 @@ contract TenderContract {
         require(block.timestamp >= tenders[tenderId].endTime, "Tender is still open.");
         _;
     }
-
+    
     // Constructor to initialize the contract owner
     constructor() {
         owner = msg.sender;
+
+        permissions["council"] = [false, false, true, false];
+        permissions["contractor"] = [false, true, true, false];
+        permissions["voter"] = [true, false, false, false];
+        permissions["admin"] = [true, true, true, true];
     }
 
     // Returns the number of bids on a given tenderId
@@ -77,7 +97,7 @@ contract TenderContract {
     }
 
     // Function to create a new tender (only registered users can create tenders)
-    function createTender(string memory title, uint256 startTime, uint256 endTime, string memory description) external payable onlyRegisteredUser {
+    function createTender(string memory title, uint256 startTime, uint256 endTime, string memory description) external payable onlyRegisteredCreator {
         require(startTime < endTime, "Start time must be earlier than end time.");
         uint256 tenderId = tenders.length;
         tenders.push(Tender({
@@ -141,7 +161,7 @@ contract TenderContract {
     }
 
     // Function to vote for a tender (only registered users can vote on open tenders)
-    function vote(uint256 tenderId) external onlyRegisteredUser tenderOpen(tenderId) {
+    function vote(uint256 tenderId) external onlyRegisteredVoter tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
         require(block.timestamp <= tender.endTime, "Voting has ended.");
@@ -152,7 +172,7 @@ contract TenderContract {
     }
 
     // Function to close a tender and finalize the winner (only the tender creator can close the tender)
-    function closeTender(uint256 tenderId) external onlyRegisteredUser tenderClosed(tenderId) {
+    function closeTender(uint256 tenderId) external onlyRegisteredAdmin tenderClosed(tenderId) {
         Tender storage tender = tenders[tenderId];
         require(tender.isOpen, "Tender Already closed.");
         tender.isOpen = false;
@@ -160,7 +180,6 @@ contract TenderContract {
         address winner = tender.highestBidder;
         uint256 winningBid = tender.highestBid;
         uint256 bounty = tender.bounty;
-
 
         // The creator (Government, Local Council, Contractor) receives the highest bid
         if (winner != address(0) && winningBid > 0) {
