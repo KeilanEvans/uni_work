@@ -5,15 +5,16 @@ const Register = ({ setIsLoggedIn }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [address, setAddress] = useState('');
+  const [permission, setPermission] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
 
   const handleSubmit = () => {
-    if (!username || !password || !address) {
+    if (!username || !password || !address || !permission) {
       alert("All fields are required.");
       return;
     }
-    console.log("Registering user:", { username, password, address }); // Debugging statement
-    handleRegister(username, password, address, setIsLoggedIn);
+    console.log("Registering user:", { username, password, address, permission }); // Debugging statement
+    handleRegister(username, password, address, permission, setIsLoggedIn);
     setIsRegistered(true); // Set isRegistered to true after successful registration
   };
 
@@ -42,6 +43,17 @@ const Register = ({ setIsLoggedIn }) => {
             value={address}
             onChange={(e) => setAddress(e.target.value)}
           />
+          <select
+            id="permissions"
+            name="permission-level"
+            value={permission}
+            onChange={(e) => setPermission(e.target.value)}
+          >
+            <option value="voter">Voter</option>
+            <option value="bidder">Contractor</option>
+            <option value="creator">Council</option>
+            <option value="admin">Admin</option>
+          </select>
           <button onClick={handleSubmit}>Register</button>
         </>
       )}
