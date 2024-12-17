@@ -37,7 +37,7 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
           />
         </div>
         <div>
-          <label className="form-label">Bounty:</label>
+          <label className="form-label">Bounty (ETH):</label>
           <input
             type="number"
             id="tender-bounty"
@@ -46,7 +46,7 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
           />
         </div>
         <div>
-          <label className="form-label">Minimum Bid:</label>
+          <label className="form-label">Minimum Bid (ETH):</label>
           <input
             type="number"
             id="tender-minbid"
@@ -63,8 +63,8 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
               const description = document.getElementById("tender-description").value;
               const date = document.getElementById("tender-date").value;
               const time = document.getElementById("tender-time").value;
-              const bounty = BigInt(document.getElementById("tender-bounty").value);
-              const minBid = BigInt(document.getElementById("tender-minbid").value);
+              const bounty = Number(document.getElementById("tender-bounty").value);
+              const minBid = Number(document.getElementById("tender-minbid").value);
 
               if (!name || !description || !date || !time || !bounty || !minBid) {
                 alert("All fields are required.");
