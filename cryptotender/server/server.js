@@ -109,10 +109,18 @@ app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password, address } = req.body;
     const users = readUsersFromFile();
+
+    const userExists = users.some(user => user.username === username);
+    if (userExists) {
+      return res.status(400).send({ message: 'Username already exists.' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     users.push({ username, password: hashedPassword, address });
     writeUsersToFile(users);
+
     res.status(201).send('User registered');
+    
   } catch (error) {
     console.error('Error during registration:', error);
     res.status(500).send({ message: 'Internal Server Error' });

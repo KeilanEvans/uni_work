@@ -13,6 +13,15 @@
     "username": "Alex",
     "password": "$2b$10$WszzPQ1No0Vln0eKAH151u42qrP0zmpCOmHnwrH/z/hAFVevVpLAG",
     "address": "0x97d4FD146db534812f6cD23F849D24Aa4BABFf46"
+  },
+  {
+    "username": "Bob",
+    "password": "$2b$10$A3yKSiXlVyjS9KYSfCnry.RnXWwndpAXE4.k6QYC6HPHGdB2pZeka",
+    "address": "0x9449A7403e5e9E9b086a65E8cEDf6739669Cc55a"
+  },
+  {
+    "username": "bob",
+    "password": "$2b$10$zb4JfGB0q3mEuZKucjOjl.Q52Rh9Kt/nCTFBn4ZKG7kU2dHHj54eG",
+    "address": "0x9449A7403e5e9E9b086a65E8cEDf6739669Cc55a"
   }
-
 ]
