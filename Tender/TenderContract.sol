@@ -30,7 +30,6 @@ contract TenderContract {
     Tender[] public tenders;       // Array to store all tenders
     uint256 public tenderTotalCount; 
     address[] private registeredUsers;
-    mapping(address => bool) public creatorRegistry;
     mapping(address => bool) public userRegistry; // Mapping to store registered users
     mapping(uint256 => mapping(address => Bid)) public bids; // Mapping from tender ID to bids by address
     mapping(uint256 => mapping(address => bool)) public votes; // Mapping from tender ID to votes by address
@@ -39,12 +38,6 @@ contract TenderContract {
     // Modifier to restrict functions to only registered users
     modifier onlyRegisteredUser() {
         require(userRegistry[msg.sender], "You are not a registered user.");
-        _;
-    }
-    
-    // Modifier to restrict functions to only registered creators
-    modifier onlyRegisteredCreator() {
-        require(creatorRegistry[msg.sender], "You are not a registered creator.");
         _;
     }
 
