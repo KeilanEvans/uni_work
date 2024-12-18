@@ -202,7 +202,6 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
             type="button"
             className="button create-button"
             onClick={handleSubmit}    
->>>>>>> 902cdd64ef66dbe7f45b2e11d893a2180b2f1858
           >
             Create Tender
           </button>
