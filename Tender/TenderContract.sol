@@ -11,7 +11,7 @@ contract TenderContract {
         uint256 startTime;          // Start time of the tender
         uint256 endTime;            // End time of the tender
         string description;         // Description of what the tender involves
-        uint256 bounty;             // Reward that government is willing to pay highestBidder
+        uint256 bounty;             // Reward that government is willing to pay to highestBidder address
         uint256 minimumBid;         // The 'reserve' or minimum the government are willing for tender to sell for
         uint256 highestBid;         // Highest bid amount received for the tender
         address highestBidder;      // Address of the highest bidder
@@ -25,24 +25,30 @@ contract TenderContract {
         bool exists;               // Indicates whether the bid exists
     }
 
+    // Events
     event TenderClosed(uint256 tenderId, address winner, uint256 winningBid, uint256 bountyAwarded);
     event UserRegistered(address indexed user, string role);
     event PermissionsUpdated(address indexed user, string permissions);
     event TenderCreated(uint256 tenderId, string title);
     event BidPlaced(uint256 tenderId, uint256 value);
     event VoteSubmitted(uint256 tenderId, address voter);
+    event RegistrationStatusChaged(address user, bool registrationStatus);
 
-    address public owner;          // Address of the contract owner
-    Tender[] public tenders;       // Array to store all tenders
-    uint256 public tenderTotalCount; 
-    address[] private registeredUsers;
+    // Global variables
+    address public owner;                   // Address of the contract owner
+    Tender[] public tenders;                // Array to store all tenders
+    uint256 public tenderTotalCount;        // Holds the count for the total number of Tenders
+    address[] private registeredUsers;      // Holds array of registered user addresses
 
-    mapping(string => bool[4]) private permissions;
-    mapping(address => bool[4]) public userRegistry; // Mapping to store registered users permissions
-    mapping(address => bool) public isRegistered;
-    mapping(uint256 => mapping(address => Bid)) public bids; // Mapping from tender ID to bids by address
-    mapping(uint256 => mapping(address => bool)) public votes; // Mapping from tender ID to votes by address
-    mapping(uint256 => uint256) public bidCountPerTender; // Keep track of number of bids for each tender
+    // Mappings for lookups
+    mapping(string => bool[4]) private permissions;             // Mapping to store permission profiles 
+    mapping(address => bool[4]) private userRegistry;           // Mapping to store registered users permissions
+    mapping(address => bool) private isRegistered;              // Mapping that holds register status for a user
+    mapping(uint256 => mapping(address => Bid)) private bids;   // Mapping from tender ID to bids by address
+    mapping(uint256 => mapping(address => bool)) public votes;  // Mapping from tender ID to votes by address
+    mapping(uint256 => uint256) public bidCountPerTender;       // Keep track of number of bids for each tender
+
+    /*  Defining Modifiers  */
 
     // Restricts actions to only allow those with voting permissions
     modifier onlyRegisteredVoter() {
@@ -103,6 +109,8 @@ contract TenderContract {
         require(bid > tenders[tenderId].minimumBid, "Your bid did not breach the reserve price.");
         _;
     }
+
+    /*  Defining Constructor  */
     
     // Constructor to initialize the contract owner
     constructor() {
@@ -115,6 +123,8 @@ contract TenderContract {
         permissions["voter"] = [true, false, false, false];
         permissions["admin"] = [true, true, true, true];
     }
+
+    /*  Defining Setter Functions  */
 
     // Allow owner to set admin permissions of any registered user 
     function setAdminPermissions(address user) external onlyOwner {
@@ -130,10 +140,15 @@ contract TenderContract {
         emit PermissionsUpdated(user, permissionLevel);
     }
 
-    // Returns the total number of bids on a given tenderId
-    function getBidCount(uint256 tenderId) external view returns(uint256) {
-        return bidCountPerTender[tenderId];
+    // Can switch/set a user's registered status
+    //      Useful for MP's or Councils changing and having to remove their registration status
+    function setRegistered(address user, bool registrationStatus) private onlyRegisteredAdmin {
+        isRegistered[user] = registrationStatus;
+
+        emit RegistrationStatusChaged(user, registrationStatus);
     }
+
+    /*  Defining Primary Functions  */
 
     // Function to register users (only an admins can register users)
     function registerUser(address user, string memory permissionLevel) external onlyRegisteredAdmin {
@@ -288,14 +303,21 @@ contract TenderContract {
         return tenders.length;
     }
 
+    /*  Defining Getter Functions  */
+
     // Function to get all Tenders
     function getTenders() external view returns (Tender[] memory) {
         return tenders;
     }
 
+    // Returns the total number of bids on a given tenderId
+    function getBidCount(uint256 tenderId) external view returns(uint256) {
+        return bidCountPerTender[tenderId];
+    }
+
     // Function to get all TenderIDs a user has bid on
     // Returns an array of tenderIDs the user has bid on and an array of their bid amounts
-    function getBids(address account) external view returns (uint256[] memory, uint256[] memory) {
+    function getBids(address account) external view onlyRegisteredUser returns (uint256[] memory, uint256[] memory) {
         uint256 count = 0;
 
         // First get the number of bids the user has made
