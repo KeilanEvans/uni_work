@@ -118,7 +118,7 @@ export const connectWallet = async () => {
     const accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
-    
+
     // Assign default current account and handle basic errors
     if (accounts.length > 0) {
       currentAccount = accounts[0];

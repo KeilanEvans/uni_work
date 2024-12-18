@@ -5,7 +5,9 @@ const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
+
 const app = express();
+
 const { Web3 } = require('web3');
 const abi = require('../src/abi.json');
 const usersFilePath = path.join(__dirname, 'users.json');

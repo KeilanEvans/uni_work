@@ -198,6 +198,7 @@ function App() {
               const openStatus = calculateOpenStatus(tender.endTime);
               const timeLeft = calculateTimeLeftStr(tender.endTime);
               const timeLeftInt = calculateTimeLeftInt(tender.endTime);
+
               return (
                 <tr
                   key={index}
