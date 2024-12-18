@@ -7,7 +7,7 @@ const Register = ({ setIsLoggedIn, setCurrentPage }) => {
   const [password, setPassword] = useState('');
   const [address, setAddress] = useState('');
   const [permission, setPermission] = useState('');
-  const [isRegistered, setIsRegistered] = useState(false);
+  const [registrationStatus, setRegistrationStatus] = useState(null); // null, 'success', or 'failed'
 
   const handleSubmit = async () => {
     if (!username || !password || !address || !permission) {
@@ -18,9 +18,10 @@ const Register = ({ setIsLoggedIn, setCurrentPage }) => {
     
     try {
       await handleRegister(username, password, address, permission, setIsLoggedIn);
-      setIsRegistered(true); // Set isRegistered to true after successful registration
+      setRegistrationStatus('success'); // Set registrationStatus to 'success' after successful registration
     } catch (error) {
-      console.error("Registration failed:", error)
+      console.error("Registration failed:", error);
+      setRegistrationStatus('failed'); // Set registrationStatus to 'failed' if registration fails
     }
   };
 
@@ -32,8 +33,10 @@ const Register = ({ setIsLoggedIn, setCurrentPage }) => {
         setIsLoggedIn(false);
       }}
     >
-      {isRegistered ? (
+      {registrationStatus === 'success' ? (
         <h1>Registration Successful!</h1>
+      ) : registrationStatus === 'failed' ? (
+        <h1>Registration Failed!</h1>
       ) : (
         <form className="register-form" onSubmit={(e) => e.preventDefault()}>
           <div className="form-group">
