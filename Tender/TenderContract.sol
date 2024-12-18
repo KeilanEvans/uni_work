@@ -44,43 +44,49 @@ contract TenderContract {
     mapping(uint256 => mapping(address => bool)) public votes; // Mapping from tender ID to votes by address
     mapping(uint256 => uint256) public bidCountPerTender; // Keep track of number of bids for each tender
 
+    // Restricts actions to only allow those with voting permissions
     modifier onlyRegisteredVoter() {
         require(userRegistry[msg.sender][0], "You are not a registered voter.");
         _;
     }
 
+    // Restricts actions to those with bidding permissions
     modifier onlyRegisteredBidder() {
         require(userRegistry[msg.sender][1], "You are not a registered contractor");
         _;
     }
 
+    // Restricts user actions to those with tender creation permissions
     modifier onlyRegisteredCreator() {
         require(userRegistry[msg.sender][2], "You are not a registered Council.");
         _;
     }
 
+    // For allowing only admins to make specific changes
     modifier onlyRegisteredAdmin() {
         require(userRegistry[msg.sender][3], "You are not a registered Admin.");
         _;
     }
 
+    // Only allows owner to make changes
     modifier onlyOwner() {
         require(owner == msg.sender);
         _;
     }
 
+    // For where actions can be taken by any registered user but not an unregistered user
     modifier onlyRegisteredUser() {
         require(isRegistered[msg.sender], "You are not a registered user.");
         _;
     }
 
-    // Modifier to restrict functions to only the creator of the tender
+    // Modifier to restrict permissions to only the creator of the tender
     modifier onlyTenderCreator(uint256 tenderId) {
         require(msg.sender == tenders[tenderId].creator, "You are not the creator of this tender.");
         _;
     }
 
-    // Modifier to ensure the tender is open
+    // Modifier to ensure the given tender is open
     modifier tenderOpen(uint256 tenderId) {
         require(tenders[tenderId].isOpen, "Tender is closed.");
         _;
@@ -92,7 +98,7 @@ contract TenderContract {
         _;
     }
 
-
+    // Refuses bids that are not greater than the current minimum bid
     modifier greaterThanMinimum(uint256 tenderId, uint256 bid) {
         require(bid > tenders[tenderId].minimumBid, "Your bid did not breach the reserve price.");
         _;
@@ -100,15 +106,17 @@ contract TenderContract {
     
     // Constructor to initialize the contract owner
     constructor() {
+        // Set owner address
         owner = msg.sender;
 
+        // Instantiate permissions mapping
         permissions["council"] = [false, false, true, false];
         permissions["contractor"] = [false, true, true, false];
         permissions["voter"] = [true, false, false, false];
         permissions["admin"] = [true, true, true, true];
     }
 
-    //
+    // Allow owner to set admin permissions of any registered user 
     function setAdminPermissions(address user) external onlyOwner {
         userRegistry[user] = permissions["admin"];
 
@@ -127,7 +135,7 @@ contract TenderContract {
         return bidCountPerTender[tenderId];
     }
 
-    // Function to register users (only an admin can register users)
+    // Function to register users (only an admins can register users)
     function registerUser(address user, string memory permissionLevel) external onlyRegisteredAdmin {
         require(!isRegistered[user], "User already registered!");
 
@@ -138,7 +146,8 @@ contract TenderContract {
         emit UserRegistered(user, permissionLevel);
     }
 
-    // Function to create a new tender (only registered users can create tenders)
+    // Function to create a new tender:
+    // (only registered users with creator permission can create tenders)
     function createTender(
         string memory title, 
         uint256 startTime, 
@@ -148,11 +157,13 @@ contract TenderContract {
         string memory description) 
         external payable onlyRegisteredCreator {
 
+        // Handle poor information parsed to contract
         require(startTime < endTime, "Start time must be earlier than end time.");
         require(msg.value == bounty, "You must send the exact amount in Ether for the bounty.");
 
         uint256 tenderId = tenders.length;
         
+        // Add the Tender to the array of tenders
         tenders.push(Tender({
             id: tenderId,
             title: title,
@@ -173,11 +184,13 @@ contract TenderContract {
         emit TenderCreated(tenderId, title);
     }
 
-    // Function to place a bid on a tender (only registered users can place bids on open tenders)
+    // Function to place a bid on a tender:
+    // (only registered users with bidding permission can place bids on open tenders)
     function placeBid(uint256 tenderId) 
     external payable onlyRegisteredBidder greaterThanMinimum(tenderId, msg.value) tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
+        // Handle poor parsed parameters
         require(block.timestamp >= tender.startTime, "Bidding hasn't started yet.");
         require(block.timestamp <= tender.endTime, "Bidding time is over.");
         require(!bids[tenderId][msg.sender].exists, "You have already placed a bid.");
@@ -196,16 +209,19 @@ contract TenderContract {
         emit BidPlaced(tenderId, msg.value);
     }
 
-    // Function to revise a bid before bidding time ends
+    // Function to revise a bid before bidding time ends:
+    // (only registered users with bidding permission can revise bids)
+    //      Additionally, bidders can only revise their bid to greater than the reserve (minimum)
+    //      This prevents initiating a bid above minimum then revising it below minimum
     function reviseBid(uint256 tenderId) 
     external payable onlyRegisteredBidder greaterThanMinimum(tenderId, msg.value) tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
+        // On the front-end, users are only given the option to choose bids that belong to them
         require(bids[tenderId][msg.sender].exists, "No bid placed yet.");
         require(block.timestamp <= tender.endTime, "Bidding time is over.");
 
         Bid storage existingBid = bids[tenderId][msg.sender];
-        require(msg.value != existingBid.amount, "New bid must be different from existing one.");
         
         // Refund the old bid
         payable(msg.sender).transfer(existingBid.amount);
@@ -221,7 +237,8 @@ contract TenderContract {
         emit BidPlaced(tenderId, msg.value);
     }
 
-    // Function to vote for a tender (only registered users can vote on open tenders)
+    // Function to vote for a tender:
+    // (only registered users with voting permissions can vote on open tenders)
     function vote(uint256 tenderId) external onlyRegisteredVoter tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
@@ -234,7 +251,9 @@ contract TenderContract {
         emit VoteSubmitted(tenderId, msg.sender);
     }
 
-    // Function to close a tender and finalize the winner (only an Admin can close the tender)
+    // Function to close a tender and finalize the winner:
+    // (only an Admin can close the tender)
+    //      This is done to only allow certified nodes like our locally run node to close tenders
     function closeTender(uint256 tenderId) external onlyRegisteredAdmin tenderClosed(tenderId) {
         Tender storage tender = tenders[tenderId];
         require(tender.isOpen, "Tender Already closed.");
@@ -275,9 +294,11 @@ contract TenderContract {
     }
 
     // Function to get all TenderIDs a user has bid on
+    // Returns an array of tenderIDs the user has bid on and an array of their bid amounts
     function getBids(address account) external view returns (uint256[] memory, uint256[] memory) {
         uint256 count = 0;
 
+        // First get the number of bids the user has made
         for (uint256 i = 0; i < tenders.length; i++) {
             if (bids[i][account].exists) {
                 count++;
@@ -288,6 +309,7 @@ contract TenderContract {
         uint256[] memory bidAmounts = new uint256[](count);
         uint256 index = 0;
 
+        // Now add those instances to the return variables
         for (uint256 i = 0; i < tenders.length; i++) {
             if (bids[i][account].exists) {
                 tenderIds[index] = i; // Add the tenderID
@@ -300,6 +322,7 @@ contract TenderContract {
 
     }
 
+    // Gets the amount a user has bid on a given tender
     function getBidAmount(uint256 tenderId, address account) external view returns (uint256) {
         require(tenderId < tenders.length, "Invalid tenderId");
         require(bids[tenderId][account].exists, "Bid does not exist");
