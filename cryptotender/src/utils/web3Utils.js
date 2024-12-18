@@ -118,7 +118,7 @@ export const connectWallet = async () => {
     const accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
-
+    
     // Assign default current account and handle basic errors
     if (accounts.length > 0) {
       currentAccount = accounts[0];
@@ -195,6 +195,4 @@ export const initWeb3 = async (setWeb3, setAccount, setContract, setLoading, set
   } catch (error) {
     console.error("Error connecting to Web3:", error);
   }
-
-  
 };

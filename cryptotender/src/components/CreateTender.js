@@ -140,7 +140,7 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
               readOnly
               placeholder="GBP equivalent"
             />
-          </div>
+           </div>
           <div>
             <label className="form-label">Minimum Bid (ETH):</label>
             <input
@@ -185,7 +185,6 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
                 alert("All fields are required.");
                 return;
               }
-
               if (bounty <= 0 || minBid < 0) {
                 alert("Unacceptable values parsed for bounty and minBid. Please parse acceptable values.");
                 return;
