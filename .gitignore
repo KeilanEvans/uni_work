@@ -5,9 +5,6 @@ node_modules/
 artifacts/
 cache/
 
-# Ignore environment variables
-.env
-
 # Ignore coverage reports
 coverage/
 
@@ -22,3 +19,7 @@ bin/
 
 # Ignore Visual Studio Code settings
 .vscode/
+
+# Ignore env
+.env
+

@@ -1,0 +1,120 @@
+/* Form styles */
+.form-container {
+  background-color: #3a3f47;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 300px;
+  margin: 20px auto;
+  color: #fff;
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0;
+  padding: 10px;
+}
+
+.form-header .close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #fff;
+}
+
+.form-header .page-title {
+  margin: 0;
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-container .form-label {
+  font-size: 1rem;
+  color: #fff;
+}
+
+.form-input {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #fff;
+  border-radius: 4px;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  background-color: #329ba9;
+  color: #000000;
+  text-align: center;
+}
+
+.button:hover {
+  background-color: #0d2736;
+}
+
+.button:active {
+  background-color: #0f2e41;
+}
+
+.create-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.create-button:hover {
+  background-color: #218838;
+}
+
+.back-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.back-button:hover {
+  background-color: #c82333;
+}
+
+.button-list {
+  list-style-type: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.button-list li {
+  display: inline;
+}
+
+.bottom-buttons-container {
+  position: relative;
+  margin: 20px auto;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}

@@ -1,0 +1,15 @@
+{
+    "name": "CryptoTender Dev Container",
+    "image": "node:14",
+    "mounts": [
+      "source=cryptotender-server-env,target=/workspace/cryptotender/server/.env,type=volume"
+    ],
+    "workspaceFolder": "/workspace",
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "ms-vscode.vscode-typescript-tslint-plugin"
+        ]
+      }
+    }
+  }
