@@ -26,6 +26,11 @@ contract TenderContract {
     }
 
     event TenderClosed(uint256 tenderId, address winner, uint256 winningBid, uint256 bountyAwarded);
+    event UserRegistered(address indexed user, string role);
+    event PermissionsUpdated(address indexed user, string permissions);
+    event TenderCreated(uint256 tenderId, string title);
+    event BidPlaced(uint256 tenderId, uint256 value);
+    event VoteSubmitted(uint256 tenderId, address voter);
 
     address public owner;          // Address of the contract owner
     Tender[] public tenders;       // Array to store all tenders
@@ -106,11 +111,15 @@ contract TenderContract {
     //
     function setAdminPermissions(address user) external onlyOwner {
         userRegistry[user] = permissions["admin"];
+
+        emit PermissionsUpdated(user, "admin");
     }
 
     // Sets permissions of a given user to a certain level
     function setPermissions(address user, string memory permissionLevel) private onlyRegisteredAdmin {
         userRegistry[user] = permissions[permissionLevel];
+
+        emit PermissionsUpdated(user, permissionLevel);
     }
 
     // Returns the total number of bids on a given tenderId
@@ -125,6 +134,8 @@ contract TenderContract {
         setPermissions(user, permissionLevel);
         registeredUsers.push(user);
         isRegistered[user] = true;
+
+        emit UserRegistered(user, permissionLevel);
     }
 
     // Function to create a new tender (only registered users can create tenders)
@@ -158,6 +169,8 @@ contract TenderContract {
         }));
 
         tenderTotalCount++;
+
+        emit TenderCreated(tenderId, title);
     }
 
     // Function to place a bid on a tender (only registered users can place bids on open tenders)
@@ -179,6 +192,8 @@ contract TenderContract {
         tender.highestBidder = msg.sender;
         
         bidCountPerTender[tenderId] += 1;
+
+        emit BidPlaced(tenderId, msg.value);
     }
 
     // Function to revise a bid before bidding time ends
@@ -202,6 +217,8 @@ contract TenderContract {
             tender.highestBid = existingBid.amount;
             tender.highestBidder = msg.sender;
         }
+
+        emit BidPlaced(tenderId, msg.value);
     }
 
     // Function to vote for a tender (only registered users can vote on open tenders)
@@ -213,6 +230,8 @@ contract TenderContract {
 
         votes[tenderId][msg.sender] = true;
         tenders[tenderId].votes++;
+
+        emit VoteSubmitted(tenderId, msg.sender);
     }
 
     // Function to close a tender and finalize the winner (only an Admin can close the tender)
@@ -284,6 +303,7 @@ contract TenderContract {
     function getBidAmount(uint256 tenderId, address account) external view returns (uint256) {
         require(tenderId < tenders.length, "Invalid tenderId");
         require(bids[tenderId][account].exists, "Bid does not exist");
+
         return bids[tenderId][account].amount;
     }
 
