@@ -184,7 +184,6 @@ app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body;
     console.log('Login attempt:', username);
     const users = readUsersFromFile();
-    console.log('Users:', users); // Log the users array
     const user = users.find(u => u.username === username);
     if (!user) {
       console.log('User not found');
