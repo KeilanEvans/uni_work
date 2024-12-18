@@ -40,7 +40,6 @@ function App() {
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [ethGbpRate, setEthGbpRate] = useState(null);
 
-
   useEffect(() => {
     const fetchRate = async () => {
       const rate = await getEthToGbpRate();
