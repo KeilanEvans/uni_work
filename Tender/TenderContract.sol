@@ -257,38 +257,35 @@ contract TenderContract {
 
     // Function to get all TenderIDs a user has bid on
     function getBids(address account) external view returns (uint256[] memory, uint256[] memory) {
-    uint256 count = 0;
+        uint256 count = 0;
 
-    // Count how many bids exist for the account
-    for (uint256 i = 0; i < tenders.length; i++) {
-        if (bids[i][account].exists) {
-            count++;
+        for (uint256 i = 0; i < tenders.length; i++) {
+            if (bids[i][account].exists) {
+                count++;
+            }
         }
-    }
 
-    // Create arrays of the appropriate size
-    uint256[] memory tenderIds = new uint256[](count);
-    uint256[] memory bidAmounts = new uint256[](count);
-    uint256 index = 0;
+        uint256[] memory tenderIds = new uint256[](count);
+        uint256[] memory bidAmounts = new uint256[](count);
+        uint256 index = 0;
 
-    // Populate the arrays with tenderIDs and bid amounts
-    for (uint256 i = 0; i < tenders.length; i++) {
-        if (bids[i][account].exists) {
-            tenderIds[index] = i; // Add the tenderID
-            bidAmounts[index] = bids[i][account].amount; // Add the bid amount
-            index++;
+        for (uint256 i = 0; i < tenders.length; i++) {
+            if (bids[i][account].exists) {
+                tenderIds[index] = i; // Add the tenderID
+                bidAmounts[index] = bids[i][account].amount; // Add the bid amount
+                index++;
+            }
         }
-    }
 
-    return (tenderIds, bidAmounts);
+        return (tenderIds, bidAmounts);
 
     }
 
     function getBidAmount(uint256 tenderId, address account) external view returns (uint256) {
-    require(tenderId < tenders.length, "Invalid tenderId");
-    require(bids[tenderId][account].exists, "Bid does not exist");
-    return bids[tenderId][account].amount;
-}
+        require(tenderId < tenders.length, "Invalid tenderId");
+        require(bids[tenderId][account].exists, "Bid does not exist");
+        return bids[tenderId][account].amount;
+    }
 
     // Function to get the details of a tender
     function getTender(uint256 tenderId) external view onlyRegisteredAdmin returns (
