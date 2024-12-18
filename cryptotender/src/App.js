@@ -76,8 +76,8 @@ function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      // Update the component to trigger re-render
-    }, 1000);
+      setCurrentTime(Date.now());
+    }, 1000); // Update every second
     return () => clearInterval(interval);
   }, []);
 
@@ -195,7 +195,12 @@ function App() {
             </tr>
           ) : tenders.length > 0 ? (
             tenders.map((tender, index) => {
-              const ethValue = fromWei(tender.highestBid.toString()) * 1000000;
+              const ethValue = fromWei(tender.highestBid.toString());
+              const gbpValue = convertToGbp(ethValue);
+              const openStatus = calculateOpenStatus(tender.endTime);
+              const timeLeft = calculateTimeLeftStr(tender.endTime);
+              const timeLeftInt = calculateTimeLeftInt(tender.endTime);
+              
               return (
                 <tr
                   key={index}
@@ -207,23 +212,23 @@ function App() {
                   <td>{tender.description || 'N/A'}</td>
                   <td>{tender.votes.toString()}</td>
                   <td>{ethValue} ETH</td>
-                  <td>{formatCurrency(convertToGbp(ethValue))}</td>
-                  <td>{calculateOpenStatus(tender.endTime)}</td>
+                  <td>{formatCurrency(gbpValue)}</td>
+                  <td>{openStatus}</td>
                   <td
                     className={
-                      calculateTimeLeftInt(tender.endTime) < 3600
+                      timeLeftInt < 3600
                         ? 'Closing-bidding'
                         : 'Open-bidding'
                     }
                   >
-                    {calculateTimeLeftStr(tender.endTime)}
+                    {timeLeft}
                   </td>
                 </tr>
               );
             })
           ) : (
             <tr>
-              <td colSpan="6">No tenders available</td>
+              <td colSpan="8">No tenders available</td>
             </tr>
           )}
         </tbody>
