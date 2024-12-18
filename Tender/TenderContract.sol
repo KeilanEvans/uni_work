@@ -308,7 +308,7 @@ contract TenderContract {
     }
 
     // Function to get the details of a tender
-    function getTender(uint256 tenderId) external view onlyRegisteredAdmin returns (
+    function getTender(uint256 tenderId) external view onlyRegisteredUser returns (
         uint256 id, 
         string memory title,
         address creator, 
