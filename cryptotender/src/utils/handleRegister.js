@@ -33,7 +33,6 @@ const handleRegister = async (username, password, address, permission, setIsLogg
       alert("Failed to register user. Please try again.");
     }
     
-
   } catch (error) {
     console.error("Registration error:", error); // Debugging statement
     alert(error.response?.data?.message || "Registration failed");
