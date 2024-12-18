@@ -43,7 +43,10 @@ const setInternalContract = (tenderCon) => {
 
 export const getBids = async (contract, account) => {
   try {
-    const [tenderIds, bidAmounts] = await contract.methods.getBids(account).call();
+    const bidsResult = await contract.methods.getBids(account).call();
+    const tenderIds = bidsResult[0];
+    const bidAmounts = bidsResult[1];
+    
     return { tenderIds, bidAmounts };
   } catch (error) {
     console.error("Error fetching bids:", error);
@@ -187,11 +190,6 @@ export const initWeb3 = async (setWeb3, setAccount, setContract, setLoading, set
 
     // Load Tenders
     await getTenders(tenderContract, setLoading, setTenders);
-
-    // Load Bids for Current User
-    const userBids = await tenderContract.methods.getBids(accounts[0]).call();
-    setBids(userBids);
-
   } catch (error) {
     console.error("Error connecting to Web3:", error);
   }
