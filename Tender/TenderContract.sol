@@ -117,16 +117,17 @@ contract TenderContract {
         for (uint256 i = 0; i < tenders.length; i++) {
             Tender storage existingTender = tenders[i];
 
-            // We need to check against a literal comparison of data
-            //      If these attributes are identical, we will consider the tender to already be existing
-            require(
+            // Check if any of the fields are identical
+            // If any of these match, we consider the tender to already exist
+            if (
                 existingTender.isOpen &&
-                keccak256(bytes(existingTender.title)) != keccak256(bytes(title)) && 
-                existingTender.endTime != endTime && 
-                existingTender.creator != creator &&
-                keccak256(bytes(existingTender.description)) != keccak256(bytes(description)),
-                "Tender with identical details already exists."
-            );
+                keccak256(bytes(existingTender.title)) == keccak256(bytes(title)) && // Title matches
+                existingTender.endTime == endTime && // End time matches
+                existingTender.creator == creator && // Creator matches
+                keccak256(bytes(existingTender.description)) == keccak256(bytes(description)) // Description matches
+            ) {
+                revert("Tender with identical details already exists.");
+            }
         }
         _;
     }
