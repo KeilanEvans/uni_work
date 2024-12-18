@@ -4,7 +4,7 @@ import axios from 'axios';
 
 // Web3 contract details
 const CONTRACT_ABI = abi;
-const CONTRACT_ADDRESS = "0xF98A5076fB382Fc73d25dcd9Ed248dC7c2A1cF9C";
+const CONTRACT_ADDRESS = "0x996Ed470515a52392818F2adB955Df73AF2d08B9";
 
 // State variables
 let isRequestPending = false;
