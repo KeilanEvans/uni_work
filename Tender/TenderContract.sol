@@ -152,7 +152,15 @@ contract TenderContract {
     /*  Defining Setter Functions  */
 
     // Allow owner to set admin permissions of any registered user 
-    function setAdminPermissions(address user) external onlyRegisteredUser onlyOwner {
+    function setAdminPermissions(address user) external onlyOwner {
+        userRegistry[user] = permissions["admin"];
+
+        emit PermissionsUpdated(user, "admin");
+    }
+
+    // Set a new user as an admin, allowing bypass of having to set a user as registered first
+    function setNewAdmin(address user) external onlyRegisteredAdmin {
+        isRegistered[user] = true;
         userRegistry[user] = permissions["admin"];
 
         emit PermissionsUpdated(user, "admin");
@@ -260,7 +268,7 @@ contract TenderContract {
 
         // On the front-end, users are only given the option to choose bids that belong to them
         require(msg.value != bids[tenderId][msg.sender].amount, "Your revised bid cannot be the same as your original bid.");
-        require(msg.value !< bids[tenderId][msg.sender].amount, "Your revised bid cannot be lower than your original bid.");
+        require(msg.value > bids[tenderId][msg.sender].amount, "Your revised bid cannot be lower than your original bid.");
         require(bids[tenderId][msg.sender].exists, "No bid placed yet.");
         require(block.timestamp <= tender.endTime, "Bidding time is over.");
 
