@@ -33,7 +33,8 @@ contract TenderContract {
     address[] private registeredUsers;
 
     mapping(string => bool[4]) private permissions;
-    mapping(address => bool[4]) public userRegistry; // Mapping to store registered users
+    mapping(address => bool[4]) public userRegistry; // Mapping to store registered users permissions
+    mapping(address => bool) public isRegistered;
     mapping(uint256 => mapping(address => Bid)) public bids; // Mapping from tender ID to bids by address
     mapping(uint256 => mapping(address => bool)) public votes; // Mapping from tender ID to votes by address
     mapping(uint256 => uint256) public bidCountPerTender; // Keep track of number of bids for each tender
@@ -60,6 +61,11 @@ contract TenderContract {
 
     modifier onlyOwner() {
         require(owner == msg.sender);
+        _;
+    }
+
+    modifier onlyRegisteredUser() {
+        require(isRegistered[msg.sender], "You are not a registered user.");
         _;
     }
 
@@ -114,8 +120,11 @@ contract TenderContract {
 
     // Function to register users (only an admin can register users)
     function registerUser(address user, string memory permissionLevel) external onlyRegisteredAdmin {
+        require(!isRegistered[user], "User already registered!");
+
         setPermissions(user, permissionLevel);
         registeredUsers.push(user);
+        isRegistered[user] = true;
     }
 
     // Function to create a new tender (only registered users can create tenders)
