@@ -52,6 +52,9 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
     const bountyValue = Number(document.getElementById("tender-bounty").value);
     const minBidValue = Number(document.getElementById("tender-minbid").value);
 
+    console.log(date);
+    console.log(time);
+
     // Validation
     if (!name || !description || !date || !time || !bountyValue || !minBidValue) {
       alert("All fields are required.");

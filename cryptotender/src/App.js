@@ -150,7 +150,7 @@ function App() {
       )}
       {currentPage === 'create-tender' && (
         <CreateTender
-          handleCreateTender={(title, description, endDate, endTime) => handleCreateTender(contract, account, setTenders, title, description, endDate, endTime)}
+          handleCreateTender={(title, description, bounty, minimumBid, endDate, endTime) => handleCreateTender(contract, account, setTenders, title, description, bounty, minimumBid, endDate, endTime)}
           setCurrentPage={setCurrentPage}
           setIsLoggedIn={setIsLoggedIn}
         />
