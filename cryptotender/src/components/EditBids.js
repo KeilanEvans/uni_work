@@ -1,41 +1,101 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import FormContainer from './FormContainer';
 
 const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, web3 }) => {
+  const [selectedTenderId, setSelectedTenderId] = useState('');
+  const [newBidAmount, setNewBidAmount] = useState('');
+
+  // Convert the dual arrays into an object for easier access
+  const [bidData, setBidData] = useState({});
+
+  useEffect(() => {
+    if (bids.tenderIds && bids.bidAmounts) {
+      const combined = {};
+      for (let i = 0; i < bids.tenderIds.length; i++) {
+        const tenderId = bids.tenderIds[i].toString(); // Ensure tenderId is a string
+        combined[tenderId] = {
+          amount: bids.bidAmounts[i].toString(),
+        };
+      }
+      setBidData(combined);
+    }
+  }, [bids]);
+
+  // Debugging: Log the bidData to ensure it's correctly structured
+  useEffect(() => {
+    console.log("Bid Data:", bidData);
+  }, [bidData]);
+
+  const handleSubmit = async () => {
+    if (!selectedTenderId || !newBidAmount) {
+      alert("All fields are required.");
+      return;
+    }
+
+    if (newBidAmount <= 0) {
+      alert("Bid amount must be greater than 0.");
+      return;
+    }
+
+    try {
+      await handleEditBid(selectedTenderId, newBidAmount);
+      alert("Bid updated successfully!");
+      setCurrentPage('home');
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.error("Error editing bid:", error);
+      alert("Failed to update bid. Please try again.");
+    }
+  };
+
   return (
-    <div className="edit-bid-container">
-      <h1 className="page-title">Edit Your Bid</h1>
-      <form className="edit-bid-form">
+    <FormContainer
+      title="Edit Bid"
+      onClose={() => {
+        setCurrentPage('home');
+        setIsLoggedIn(true);
+      }}
+    >
+      <form className="edit-bid-form" onSubmit={(e) => e.preventDefault()}>
+        {/* Select Tender */}
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
-          <select id="edit-bid-tender-id" className="form-input">
-            {Object.keys(bids).map((tenderId) => (
+          <select
+            id="edit-bid-tender-id"
+            className="form-input"
+            value={selectedTenderId}
+            onChange={(e) => setSelectedTenderId(e.target.value)}
+            required
+          >
+            <option value="" disabled>Select a tender</option>
+            {Object.keys(bidData).map((tenderId) => (
               <option key={tenderId} value={tenderId}>
-                {tenders[tenderId]?.name || `Tender ${tenderId}`} - Your Bid: {web3.utils.fromWei(bids[tenderId].amount, "ether")} ETH
+                {tenders[tenderId]?.title || `Tender ${tenderId}`} - Your Bid: {web3.utils.fromWei(bidData[tenderId].amount, "ether")} ETH
               </option>
             ))}
           </select>
         </div>
+
+        {/* New Bid Amount */}
         <div className="form-group">
           <label className="form-label">New Bid Amount (in ETH):</label>
-          <input type="number" id="edit-bid-amount" className="form-input" min="0.01" step="0.01" />
+          <input
+            type="number"
+            id="edit-bid-amount"
+            className="form-input"
+            value={newBidAmount}
+            onChange={(e) => setNewBidAmount(e.target.value)}
+            required
+            placeholder="e.g. 1.5"
+          />
         </div>
+
+        {/* Form Buttons */}
         <div className="form-buttons">
           <button
             type="button"
-            className="button edit-bid-button"
-            onClick={() => {
-              const tenderID = document.getElementById("edit-bid-tender-id").value;
-              const bidValue = document.getElementById("edit-bid-amount").value;
-
-              if (!tenderID || !bidValue) {
-                alert("All fields are required.");
-                return;
-              }
-
-              handleEditBid(tenderID, bidValue);
-              setCurrentPage('home');
-              setIsLoggedIn(true);
-            }}
+            className="button create-button"
+            onClick={handleSubmit}
           >
             Submit New Bid
           </button>
@@ -48,7 +108,7 @@ const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, 
           </button>
         </div>
       </form>
-    </div>
+    </FormContainer>
   );
 };
 
