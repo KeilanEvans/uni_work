@@ -66,7 +66,7 @@ contract TenderContract {
 
     // Restricts user actions to those with tender creation permissions
     modifier onlyRegisteredCreator() {
-        require(userRegistry[msg.sender][2], "You are not a registered Council.");
+        require(userRegistry[msg.sender][2], "You are not a registered Administrator.");
         _;
     }
 
