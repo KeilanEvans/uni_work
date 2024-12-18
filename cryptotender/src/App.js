@@ -97,7 +97,6 @@ function App() {
     setShowForm(null);
   };
 
-
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -199,7 +198,7 @@ function App() {
               const openStatus = calculateOpenStatus(tender.endTime);
               const timeLeft = calculateTimeLeftStr(tender.endTime);
               const timeLeftInt = calculateTimeLeftInt(tender.endTime);
-              
+
               return (
                 <tr
                   key={index}

@@ -195,6 +195,4 @@ export const initWeb3 = async (setWeb3, setAccount, setContract, setLoading, set
   } catch (error) {
     console.error("Error connecting to Web3:", error);
   }
-
-  
 };
