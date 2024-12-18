@@ -107,7 +107,7 @@ contract TenderContract {
         userRegistry[user] = permissions[permissionLevel];
     }
 
-    // Returns the number of bids on a given tenderId
+    // Returns the total number of bids on a given tenderId
     function getBidCount(uint256 tenderId) external view returns(uint256) {
         return bidCountPerTender[tenderId];
     }
@@ -119,7 +119,15 @@ contract TenderContract {
     }
 
     // Function to create a new tender (only registered users can create tenders)
-    function createTender(string memory title, uint256 startTime, uint256 endTime, uint256 bounty, uint256 minBid, string memory description) external payable onlyRegisteredCreator {
+    function createTender(
+        string memory title, 
+        uint256 startTime, 
+        uint256 endTime, 
+        uint256 bounty, 
+        uint256 minBid, 
+        string memory description) 
+        external payable onlyRegisteredCreator {
+
         require(startTime < endTime, "Start time must be earlier than end time.");
         require(msg.value == bounty, "You must send the exact amount in Ether for the bounty.");
 
@@ -144,7 +152,8 @@ contract TenderContract {
     }
 
     // Function to place a bid on a tender (only registered users can place bids on open tenders)
-    function placeBid(uint256 tenderId) external payable onlyRegisteredBidder greaterThanMinimum(tenderId, msg.value) tenderOpen(tenderId) {
+    function placeBid(uint256 tenderId) 
+    external payable onlyRegisteredBidder greaterThanMinimum(tenderId, msg.value) tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
         require(block.timestamp >= tender.startTime, "Bidding hasn't started yet.");
@@ -164,7 +173,8 @@ contract TenderContract {
     }
 
     // Function to revise a bid before bidding time ends
-    function reviseBid(uint256 tenderId) external payable onlyRegisteredBidder greaterThanMinimum(tenderId, msg.value) tenderOpen(tenderId) {
+    function reviseBid(uint256 tenderId) 
+    external payable onlyRegisteredBidder greaterThanMinimum(tenderId, msg.value) tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
         require(bids[tenderId][msg.sender].exists, "No bid placed yet.");
@@ -272,7 +282,7 @@ contract TenderContract {
 }
 
     // Function to get the details of a tender
-    function getTender(uint256 tenderId) external view returns (
+    function getTender(uint256 tenderId) external view onlyRegisteredAdmin returns (
         uint256 id, 
         string memory title,
         address creator, 
