@@ -76,12 +76,6 @@ contract TenderContract {
         _;
     }
 
-    // Only allows owner to make changes
-    modifier onlyOwner() {
-        require(owner == msg.sender);
-        _;
-    }
-
     // For where actions can be taken by any registered user but not an unregistered user
     modifier onlyRegisteredUser() {
         require(isRegistered[msg.sender], "You are not a registered user.");
@@ -91,6 +85,12 @@ contract TenderContract {
     // Modifier to restrict permissions to only the creator of the tender
     modifier onlyTenderCreator(uint256 tenderId) {
         require(msg.sender == tenders[tenderId].creator, "You are not the creator of this tender.");
+        _;
+    }
+
+    // Only allows owner to make changes
+    modifier onlyOwner() {
+        require(owner == msg.sender);
         _;
     }
 
@@ -118,7 +118,7 @@ contract TenderContract {
             Tender storage existingTender = tenders[i];
 
             // Check if any of the fields are identical
-            // If any of these match, we consider the tender to already exist
+            // If these attributes of a Tender match, we consider the Tender to already exist
             if (
                 existingTender.isOpen &&
                 keccak256(bytes(existingTender.title)) == keccak256(bytes(title)) && // Title matches
@@ -144,12 +144,15 @@ contract TenderContract {
         permissions["contractor"] = [false, true, true, false];
         permissions["voter"] = [true, false, false, false];
         permissions["admin"] = [true, true, true, true];
+        
+        isRegistered[owner] = true;
+        userRegistry[owner] = permissions["admin"];
     }
 
     /*  Defining Setter Functions  */
 
     // Allow owner to set admin permissions of any registered user 
-    function setAdminPermissions(address user) external onlyOwner {
+    function setAdminPermissions(address user) external onlyRegisteredUser onlyOwner {
         userRegistry[user] = permissions["admin"];
 
         emit PermissionsUpdated(user, "admin");
