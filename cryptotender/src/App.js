@@ -1,425 +1,237 @@
 import React, { useState, useEffect } from 'react';
-import Web3 from 'web3';
-import Papa from 'papaparse'; // For parsing CSV
-import { saveAs } from 'file-saver'; // For downloading CSV
 import './App.css';
-import logo from './eebay.svg';
-
-// Replace with your contract ABI and address
-const CONTRACT_ABI = [/* Your ABI Here */];
-const CONTRACT_ADDRESS = "0xYourContractAddress"; // Replace with your deployed contract address
+import logo from './Welsh_Government_logo.svg';
+import EditBid from './components/EditBids';
+import CreateTender from './components/CreateTender';
+import PlaceBid from './components/PlaceBid';
+import Vote from './components/Vote';
+import Register from './components/Register';
+import Login from './components/Login';
+import handleCreateTender from './utils/handleCreateTender';
+import handleEditBid from './utils/handleEditBid';
+import handlePlaceBid from './utils/handlePlaceBid';
+import handleVote from './utils/handleVote';
+import handleRowClick from './utils/handleRowClick';
+import calculateOpenStatus from './utils/calculateOpenStatus';
+import calculateTimeLeftStr from './utils/calculateTimeLeftStr';
+import calculateTimeLeftInt from './utils/calculateTimeLeftInt';
+import handleLogout from './utils/handleLogout.js';
+import { 
+  initWeb3, 
+  connectWallet, 
+  getTenders,
+  getCurrentAccount,
+  fromWei,
+  getEthToGbpRate,
+  getBids
+ } from './utils/web3Utils';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [clickedRow, setClickedRow] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
   const [tenders, setTenders] = useState([]);
-  const [extraDetails, setExtraDetails] = useState([]);
-  const [web3, setWeb3] = useState(null);
   const [contract, setContract] = useState(null);
+  const [web3, setWeb3] = useState(null);
   const [account, setAccount] = useState("");
   const [bids, setBids] = useState({});
+  const [loading, setLoading] = useState({ tenderIds: [], bidAmounts: [] });
+  const [showForm, setShowForm] = useState(null); // null, 'register', or 'login'
+  const [currentTime, setCurrentTime] = useState(Date.now());
+  const [ethGbpRate, setEthGbpRate] = useState(null);
 
   useEffect(() => {
-    const initWeb3 = async () => {
-      try {
-        const web3Instance = new Web3(Web3.givenProvider || "http://localhost:8545");
-        const accounts = await web3Instance.eth.requestAccounts();
-        const tenderContract = new web3Instance.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
-  
-        setWeb3(web3Instance);
-        setAccount(accounts[0]);
-        setContract(tenderContract);
-  
-        console.log("Connected to blockchain:", accounts[0]);
-  
-        // Load Tenders
-        const tenderCount = await tenderContract.methods.tenderCount().call();
-        const loadedTenders = [];
-        for (let i = 0; i < tenderCount; i++) {
-          const tender = await tenderContract.methods.tenders(i).call();
-          loadedTenders.push(tender);
-        }
-        setTenders(loadedTenders);
-  
-        // Load Bids for Current User
-        const userBids = {};
-        for (let i = 0; i < tenderCount; i++) {
-          const bid = await tenderContract.methods.bids(i, accounts[0]).call();
-          if (bid.exists) {
-            userBids[i] = bid;
-          }
-        }
-        setBids(userBids);
-  
-        // Load Extra Details from CSV
-        fetch('./tenders.csv')
-          .then(response => response.text())
-          .then(csvData => {
-            Papa.parse(csvData, {
-              header: true,
-              complete: (result) => setExtraDetails(result.data),
-            });
-          });
-      } catch (error) {
-        console.error("Error connecting to Web3:", error);
+    const fetchRate = async () => {
+      const rate = await getEthToGbpRate();
+      setEthGbpRate(rate);
+    };
+    fetchRate();
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (contract && account) {
+        const fetchedBids = await getBids(contract, account);
+        setBids(fetchedBids);
       }
     };
-  
-    initWeb3();
+    fetchData();
+  }, [contract, account])
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+    initWeb3(setWeb3, setAccount, setContract, setLoading, setTenders, setBids);
+    connectWallet();
   }, []);
-  
 
-  const handleLogin = async () => {
-    const response = await fetch('./users.csv');
-    const csvData = await response.text();
-
-    Papa.parse(csvData, {
-      header: true,
-      complete: (result) => {
-        const users = result.data;
-        const username = prompt("Enter Username:");
-        const password = prompt("Enter Password:");
-        const user = users.find((u) => u.username === username && u.password === password);
-
-        if (user) {
-          alert("Login Successful");
-          setIsLoggedIn(true);
-        } else {
-          alert("Invalid credentials");
-        }
-      },
-    });
-  };
-
-  const handleRegister = async () => {
-    const username = prompt("Choose a Username:");
-    const password = prompt("Choose a Password:");
-
-    const response = await fetch('./users.csv');
-    const csvData = await response.text();
-
-    Papa.parse(csvData, {
-      header: true,
-      complete: (result) => {
-        const users = result.data;
-        const userExists = users.some((u) => u.username === username);
-
-        if (userExists) {
-          alert("Username already exists. Please choose another.");
-          return;
-        }
-
-        // Append new user
-        users.push({ username, password });
-
-        // Convert back to CSV
-        const updatedCSV = Papa.unparse(users);
-
-        // Download updated CSV
-        const blob = new Blob([updatedCSV], { type: 'text/csv;charset=utf-8;' });
-        saveAs(blob, 'users.csv');
-
-        alert("Registration Successful. Please log in.");
-      },
-    });
-  };
-
-  const calculateTimeLeft = (endTime) => {
-    const now = Math.floor(new Date().getTime() / 1000);
-    const timeLeft = endTime - now;
-    if (timeLeft > 0) {
-      const minutes = Math.floor(timeLeft / 60);
-      const seconds = timeLeft % 60;
-      return `${minutes}m ${seconds}s`;
+  useEffect(() => {
+    if (contract) {
+      getTenders(contract, setLoading, setTenders);
     }
-    return 'Voting Ended';
-  };
+  }, [contract]);
 
-  const handleCreateTender = async (name, description, duration) => {
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 1000); // Update every second
+    return () => clearInterval(interval);
+  }, []);
+
+  const onVote = async (contract, account, tenderId) => {
     try {
-      // Add to Blockchain
-      await contract.methods.createTender(name, duration).send({ from: account });
-
-      // Add to CSV
-      const newTender = {
-        id: tenders.length,
-        name,
-        description,
-        creator: account,
-        endTime: Math.floor(new Date().getTime() / 1000) + duration,
-      };
-      const updatedDetails = [...extraDetails, newTender];
-      setExtraDetails(updatedDetails);
-
-      const updatedCSV = Papa.unparse(updatedDetails);
-      const blob = new Blob([updatedCSV], { type: 'text/csv;charset=utf-8;' });
-      saveAs(blob, 'tenders.csv');
-
-      alert("Tender Created Successfully");
+      await handleVote(contract, account, tenderId);
+      await getTenders(contract, setLoading, setTenders);
     } catch (error) {
-      console.error("Error creating tender:", error);
+      console.error("Error voting:", error.message || error.toString());
     }
+  }
+
+  const convertToGbp = (ethValue) => {
+    return ethGbpRate ? (parseFloat(ethValue) * ethGbpRate).toFixed(2) : "Loading...";
+  }
+
+  const handleFormClose = () => {
+    setShowForm(null);
   };
 
-  const handleVote = async (tenderId) => {
-    try {
-      await contract.methods.vote(tenderId).send({ from: account });
-      alert("Vote Submitted Successfully");
-    } catch (error) {
-      console.error("Error voting:", error);
-    }
-  };
-
-  const handlePlaceBid = async (tenderId, bidAmount) => {
-    try {
-      await contract.methods.placeBid(tenderId).send({
-        from: account,
-        value: web3.utils.toWei(bidAmount, "ether"),
-      });
-      alert("Bid Placed Successfully");
-    } catch (error) {
-      console.error("Error placing bid:", error);
-    }
-  };
-  
-
-  const handleEditBid = async (tenderId, newBidAmount) => {
-    try {
-      await contract.methods.reviseBid(tenderId).send({
-        from: account,
-        value: web3.utils.toWei(newBidAmount, "ether"),
-      });
-      alert("Bid Updated Successfully");
-    } catch (error) {
-      console.error("Error editing bid:", error);
-    }
-  };
-
-  const renderPage = () => {
-    if (currentPage === 'create-tender') {
-      return (
-        <div className="create-tender-container">
-          <h1 className="page-title">Create a New Tender</h1>
-          <form className="tender-form">
-            <div className="form-group">
-              <label className="form-label">Tender Name:</label>
-              <input type="text" id="tender-name" className="form-input" />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Description:</label>
-              <textarea id="tender-description" className="form-input form-textarea"></textarea>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Duration (in seconds):</label>
-              <input type="number" id="tender-duration" className="form-input" />
-            </div>
-            <div className="form-buttons">
-              <button
-                type="button"
-                className="button create-button"
-                onClick={() =>
-                  handleCreateTender(
-                    document.getElementById("tender-name").value,
-                    document.getElementById("tender-description").value,
-                    parseInt(document.getElementById("tender-duration").value)
-                  )
-                }
-              >
-                Create Tender
-              </button>
-              <button
-                type="button"
-                className="button back-button"
-                onClick={() => setCurrentPage('home')}
-              >
-                Back to Home
-              </button>
-            </div>
-          </form>
-        </div>
-      );
-    }    
-
-    if (currentPage === 'vote') {
-      return (
-        <div className="vote-container">
-          <h1 className="page-title">Vote on a Tender</h1>
-          <form className="vote-form">
-            <div className="form-group">
-              <label className="form-label">Select Tender:</label>
-              <select id="vote-tender-id" className="form-input">
-                {tenders.map((tender, index) => (
-                  <option key={index} value={tender.id}>
-                    {tender.name} - Votes: {tender.votes}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-buttons">
-              <button
-                type="button"
-                className="button vote-button"
-                onClick={() => handleVote(document.getElementById("vote-tender-id").value)}
-              >
-                Submit Vote
-              </button>
-              <button
-                type="button"
-                className="button back-button"
-                onClick={() => setCurrentPage('home')}
-              >
-                Back to Home
-              </button>
-            </div>
-          </form>
-        </div>
-      );
-    }
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-GB', {
+      style: 'currency',
+      currency: 'GBP',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
     
+  const handleLogoutClick = () => {
+    handleLogout(setIsLoggedIn);
+    localStorage.removeItem('token');
+    handleFormClose();
+  };
 
-    if (currentPage === 'bids') {
-      return (
-        <div className="bid-container">
-          <h1 className="page-title">Place a Bid</h1>
-          <form className="bid-form">
-            <div className="form-group">
-              <label className="form-label">Select Tender:</label>
-              <select id="bid-tender-id" className="form-input">
-                {tenders
-                  .filter((tender) => !tender.isOpen && tender.highestBidder === "0x0000000000000000000000000000000000000000") // Only tenders in the bidding phase
-                  .map((tender, index) => (
-                    <option key={index} value={tender.id}>
-                      {tender.name} - Current Highest Bid: {web3.utils.fromWei(tender.highestBid, "ether")} ETH
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Bid Amount (in ETH):</label>
-              <input type="number" id="bid-amount" className="form-input" min="0.01" step="0.01" />
-            </div>
-            <div className="form-buttons">
-              <button
-                type="button"
-                className="button bid-button"
-                onClick={() =>
-                  handlePlaceBid(
-                    document.getElementById("bid-tender-id").value,
-                    document.getElementById("bid-amount").value
-                  )
-                }
-              >
-                Submit Bid
-              </button>
-              <button
-                type="button"
-                className="button back-button"
-                onClick={() => setCurrentPage('home')}
-              >
-                Back to Home
-              </button>
-            </div>
-          </form>
-        </div>
-      );
-    }
-    
-
-    if (currentPage === 'edit-bid') {
-      return (
-        <div className="edit-bid-container">
-          <h1 className="page-title">Edit Your Bid</h1>
-          <form className="edit-bid-form">
-            <div className="form-group">
-              <label className="form-label">Select Tender:</label>
-              <select id="edit-bid-tender-id" className="form-input">
-                {Object.keys(bids).map((tenderId) => (
-                  <option key={tenderId} value={tenderId}>
-                    {tenders[tenderId]?.name || `Tender ${tenderId}`} - Your Bid: {web3.utils.fromWei(bids[tenderId].amount, "ether")} ETH
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">New Bid Amount (in ETH):</label>
-              <input type="number" id="edit-bid-amount" className="form-input" min="0.01" step="0.01" />
-            </div>
-            <div className="form-buttons">
-              <button
-                type="button"
-                className="button edit-bid-button"
-                onClick={() =>
-                  handleEditBid(
-                    document.getElementById("edit-bid-tender-id").value,
-                    document.getElementById("edit-bid-amount").value
-                  )
-                }
-              >
-                Submit New Bid
-              </button>
-              <button
-                type="button"
-                className="button back-button"
-                onClick={() => setCurrentPage('home')}
-              >
-                Back to Home
-              </button>
-            </div>
-          </form>
-        </div>
-      );
-    }
-    
-    return (
-      <div className="App">
-        <img src={logo} className="App-logo" alt="logo" />
-        <header className="App-header">
-          <p>Welcome to e-Ebay!</p>
-          {isLoggedIn ? (
-            <div className="button-container">
-              <button className="button" onClick={() => setCurrentPage('create-tender')}>Create Tender</button>
-              <button className="button" onClick={() => setCurrentPage('vote')}>Vote</button>
-              <button className="button" onClick={() => setCurrentPage('bids')}>Bids</button>
-              <button className="button" onClick={() => setCurrentPage('edit-bid')}>Edit Bids</button>
-            </div>
-          ) : (
-            <div>
-              <button className="button" onClick={handleRegister}>Register</button>
-              <button className="button" onClick={handleLogin}>Log In</button>
-            </div>
-          )}
-        </header>
-        <h1>Current Tenders</h1>
-        <table className="App-table">
-          <thead>
+  return (
+    <div className="App">
+      <img src={logo} className="App-logo" alt="logo" />
+      <header className="App-header">
+        <p>Welcome to the Welsh Government Community Voting initiative!</p>
+        {isLoggedIn ? (
+          <ul className="button-list">
+            <li><button className="button" onClick={() => setCurrentPage('create-tender')}>Create Tender</button></li>
+            <li><button className="button" onClick={() => setCurrentPage('vote')}>Vote</button></li>
+            <li><button className="button" onClick={() => setCurrentPage('bids')}>Bids</button></li>
+            <li><button className="button" onClick={() => setCurrentPage('edit-bid')}>Edit Bids</button></li>
+            <li><button className="button" onClick={handleLogoutClick}>Log Out</button></li>
+          </ul>
+        ) : (
+          <ul className="button-list">
+            <li><button className="button" onClick={() => setShowForm('register')}>Register</button></li>
+            <li><button className="button" onClick={() => setShowForm('login')}>Log In</button></li>
+          </ul>
+        )}
+      </header>
+      {showForm === 'register' && !isLoggedIn && (
+        <Register setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
+      )}
+      {showForm === 'login' && !isLoggedIn && (
+        <Login setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
+      )}
+      {currentPage === 'edit-bid' && (
+        <EditBid
+          bids={bids}
+          tenders={tenders}
+          handleEditBid={(tenderId, newBidAmount) => handleEditBid(contract, account, web3, tenderId, newBidAmount)}
+          setCurrentPage={setCurrentPage}
+          setIsLoggedIn={setIsLoggedIn}
+          web3={web3}
+        />
+      )}
+      {currentPage === 'create-tender' && (
+        <CreateTender
+          handleCreateTender={(title, description, endDate, endTime) => handleCreateTender(contract, account, setTenders, title, description, endDate, endTime)}
+          setCurrentPage={setCurrentPage}
+          setIsLoggedIn={setIsLoggedIn}
+        />
+      )}
+      {currentPage === 'bids' && (
+        <PlaceBid
+          tenders={tenders}
+          web3={web3}
+          handlePlaceBid={(tenderId, bidAmount) => handlePlaceBid(contract, account, web3, tenderId, bidAmount)}
+          setCurrentPage={setCurrentPage}
+          setIsLoggedIn={setIsLoggedIn}
+        />
+      )}
+      {currentPage === 'vote' && (
+        <Vote
+          tenders={tenders}
+          handleVote={(tenderId) => onVote(contract, account, tenderId)}
+          setCurrentPage={setCurrentPage}
+          setIsLoggedIn={setIsLoggedIn}
+        />
+      )}
+      <h1 className="current-tenders-title">Current Tenders</h1>
+      <table className="App-table">
+        <thead>
+          <tr>
+            <th>Tender ID</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Votes</th>
+            <th>Highest Bid (ETH)</th>
+            <th>Highest Bid (£ GBP)</th>
+            <th>Open Status</th>
+            <th>Time Left</th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
             <tr>
-              <th>Tender ID</th>
-              <th>Name</th>
-              <th>Description</th>
-              <th>Votes</th>
-              <th>Time Left</th>
+              <td colSpan="8">Loading...</td>
             </tr>
-          </thead>
-          <tbody>
-            {tenders.map((tender, index) => {
-              const details = extraDetails.find((d) => d.id == tender.id) || {};
+          ) : tenders.length > 0 ? (
+            tenders.map((tender, index) => {
+              const ethValue = fromWei(tender.highestBid.toString());
+              const gbpValue = convertToGbp(ethValue);
+              const openStatus = calculateOpenStatus(tender.endTime);
+              const timeLeft = calculateTimeLeftStr(tender.endTime);
+              const timeLeftInt = calculateTimeLeftInt(tender.endTime);
               return (
-                <tr key={index}>
-                  <td>{tender.id}</td>
-                  <td>{tender.name}</td>
-                  <td>{details.description || 'N/A'}</td>
-                  <td>{tender.votes}</td>
-                  <td>{calculateTimeLeft(tender.endTime)}</td>
+                <tr
+                  key={index}
+                  className={clickedRow === tender.id ? 'Clicked-row' : ''}
+                  onClick={() => handleRowClick(tender.id, clickedRow, setClickedRow)}
+                >
+                  <td>{tender.id.toString()}</td>
+                  <td>{tender.title}</td>
+                  <td>{tender.description || 'N/A'}</td>
+                  <td>{tender.votes.toString()}</td>
+                  <td>{ethValue} ETH</td>
+                  <td>{formatCurrency(gbpValue)}</td>
+                  <td>{openStatus}</td>
+                  <td
+                    className={
+                      timeLeftInt < 3600
+                        ? 'Closing-bidding'
+                        : 'Open-bidding'
+                    }
+                  >
+                    {timeLeft}
+                  </td>
                 </tr>
               );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  return renderPage();
-}
+            })
+          ) : (
+            <tr>
+              <td colSpan="8">No tenders available</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+ };
 
 export default App;
