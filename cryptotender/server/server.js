@@ -35,6 +35,54 @@ const contract = new web3.eth.Contract(abi, CONTRACT_ADDRESS);
 console.log('Connected to Infura via RPC:', RPC_URL);
 console.log('Using account:', account);
 
+contract.events.TenderClosed({}, (error, event) => {
+  if (error) {
+    console.error("Error listening to TenderClosed event:", error);
+  } else {
+    console.log(`Tender ${event.returnValues.tenderId.toString()} closed. Address ${event.returnValues.winner} won with a bid of ${event.returnValues.winningBid.toString()}. Bounty of ${event.returnValues.bountyAwarded.toString()} awarded.`)
+  }
+})
+
+contract.events.UserRegistered({}, (error, event) => {
+  if (error) {
+    console.error("Error listening to UserRegistered event:", error);
+  } else {
+    console.log(`User ${event.returnValues.user} was registered with the role of ${event.returnValues.role}.`)
+  }
+})
+
+contract.events.PermissionsUpdated({}, (error, event) => {
+  if (error) {
+    console.error("Error listening to PermissionsUpdated event:", error);
+  } else {
+    console.log(`Permissions for user: ${event.returnValues.user} was set to ${event.returnValues.permissions}.`)
+  }
+})
+
+contract.events.TenderCreated({}, (error, event) => {
+  if (error) {
+    console.error("Error listening to TenderCreated event:", error);
+  } else {
+    console.log(`Tender of ID ${event.returnValues.tenderId.toString()} was created with title: ${event.returnValues.title}.`)
+  }
+})
+
+contract.events.BidPlaced({}, (error, event) => {
+  if (error) {
+    console.error("Error listening to BidsPlaced event:", error);
+  } else {
+    console.log(`Bid for tender: ${event.returnValues.tenderId.toString()} for amount: ${event.returnValues.value.toString()} was successfully placed.`)
+  }
+})
+
+contract.events.VoteSubmitted({}, (error, event) => {
+  if (error) {
+    console.error("Error listening to VoteSubmitted event.", error);
+  } else {
+    console.log(`User: ${event.returnValues.voter} voted for tender with ID: ${event.returnValues.tenderId.toString()}.`)
+  }
+})
+
 async function checkConnection() {
   try {
     // Get network ID
