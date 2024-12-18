@@ -35,13 +35,16 @@ const contract = new web3.eth.Contract(abi, CONTRACT_ADDRESS);
 console.log('Connected to Infura via RPC:', RPC_URL);
 console.log('Using account:', account);
 
-contract.events.TenderClosed({}, (error, event) => {
-  if (error) {
-    console.error("Error listening to TenderClosed event:", error);
-  } else {
-    console.log(`Tender ${event.returnValues.tenderId.toString()} closed. Address ${event.returnValues.winner} won with a bid of ${event.returnValues.winningBid.toString()}. Bounty of ${event.returnValues.bountyAwarded.toString()} awarded.`)
-  }
+/*
+contract.events.TenderClosed({
+  fromBlock: 'latest'  // Optionally specify the starting block to listen from
 })
+.on('data', (event) => {
+  console.log(`Tender ${event.returnValues.tenderId.toString()} closed. Address ${event.returnValues.winner} won with a bid of ${event.returnValues.winningBid.toString()}. Bounty of ${event.returnValues.bountyAwarded.toString()} awarded.`);
+})
+.on('error', (error) => {
+  console.error("Error listening to TenderClosed event:", error);
+});
 
 contract.events.UserRegistered({}, (error, event) => {
   if (error) {
@@ -83,6 +86,7 @@ contract.events.VoteSubmitted({}, (error, event) => {
   }
 })
 
+*/
 async function checkConnection() {
   try {
     // Get network ID
