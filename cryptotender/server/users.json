@@ -34,5 +34,11 @@
     "password": "$2b$10$9LDYEfQ/WZYfDRf6a//MResYAoR9vMrQhovP21FC/AUDbXe.GSkJq",
     "address": "0x97d4FD146db534812f6cD23F849D24Aa4BABFf46",
     "permission": "admin"
+  },
+  {
+    "username": "kevans",
+    "password": "$2b$10$UYrmdIyLQ7ZFVue0ns.WKeD8mUg17OSOG8H9jV3HQTdAKeas0/qu.",
+    "address": "0xc9fdbe9a792C8FAfbc652032c145a6F78D299E3C",
+    "permission": "admin"
   }
 ]

@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { getCurrentAccount, connectWallet, registerUserOnBlockchain } from './web3Utils';
 
-
 const handleRegister = async (username, password, address, permission, setIsLoggedIn) => {
   try {
     let account = getCurrentAccount();
@@ -13,8 +12,11 @@ const handleRegister = async (username, password, address, permission, setIsLogg
 
     if (!account) {
       alert("Please connect your MetaMask wallet to proceed.");
-      return;
+      throw new Error("MetaMask wallet not connected");
     }
+
+    console.log("Registering user on the blockchain...");
+    await registerUserOnBlockchain(address, permission);
 
     const response = await axios.post('/api/auth/register', {
       username,
@@ -25,17 +27,14 @@ const handleRegister = async (username, password, address, permission, setIsLogg
 
     if (response.status === 201) {
       setIsLoggedIn(true);
-      console.log("Registering user on the blockchain...");
-      await registerUserOnBlockchain(address, permission);
-
     } else {
       console.error("Unexpected response status:", response.status);
-      alert("Failed to register user. Please try again.");
+      throw new Error("Failed to register user");
     }
     
   } catch (error) {
     console.error("Registration error:", error); // Debugging statement
-    alert(error.response?.data?.message || "Registration failed");
+    throw error;
   }
 };
 
