@@ -76,12 +76,6 @@ contract TenderContract {
         _;
     }
 
-    // For where actions can be taken by any registered user but not an unregistered user
-    modifier onlyRegisteredUser() {
-        require(isRegistered[msg.sender], "You are not a registered user.");
-        _;
-    }
-
     // Modifier to restrict permissions to only the creator of the tender
     modifier onlyTenderCreator(uint256 tenderId) {
         require(msg.sender == tenders[tenderId].creator, "You are not the creator of this tender.");
@@ -397,7 +391,7 @@ contract TenderContract {
 
     // Function to get all TenderIDs a user has bid on
     // Returns an array of tenderIDs the user has bid on and an array of their bid amounts
-    function getBids(address account) external view onlyRegisteredUser returns (uint256[] memory, uint256[] memory) {
+    function getBids(address account) external view returns (uint256[] memory, uint256[] memory) {
         uint256 count = 0;
 
         // First get the number of bids the user has made
@@ -433,7 +427,7 @@ contract TenderContract {
     }
 
     // Function to get the details of a tender
-    function getTender(uint256 tenderId) external view onlyRegisteredUser returns (
+    function getTender(uint256 tenderId) external view returns (
         uint256 id, 
         string memory title,
         address creator, 
