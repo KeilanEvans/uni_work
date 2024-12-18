@@ -195,7 +195,13 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
               setCurrentPage('home');
               setIsLoggedIn(true);
             }}
-            onClick={handleSubmit}
+            ></button>
+        
+        <div className="form-buttons">
+          <button
+            type="button"
+            className="button create-button"
+            onClick={handleSubmit}    
           >
             Create Tender
           </button>
