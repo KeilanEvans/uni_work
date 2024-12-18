@@ -171,7 +171,38 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
           <button
             type="button"
             className="button create-button"
-            onClick={handleSubmit}
+            onClick={() => {
+              const name = document.getElementById("tender-name").value;
+              const description = document.getElementById("tender-description").value;
+              const date = document.getElementById("tender-date").value;
+              const time = document.getElementById("tender-time").value;
+              const bounty = Number(document.getElementById("tender-bounty").value);
+              const minBid = Number(document.getElementById("tender-minbid").value);
+
+              console.log("Form values:", { name, description, date, time, bounty, minBid });
+
+              if (!name || !description || !date || !time || !bounty || !minBid) {
+                alert("All fields are required.");
+                return;
+              }
+
+              if (bounty <= 0 || minBid < 0) {
+                alert("Unacceptable values parsed for bounty and minBid. Please parse acceptable values.");
+                return;
+              }
+
+              handleCreateTender(name, description, bounty, minBid, date, time);
+              setCurrentPage('home');
+              setIsLoggedIn(true);
+            }}
+            ></button>
+        </div>
+        <div className="form-buttons">
+          <button
+            type="button"
+            className="button create-button"
+            onClick={handleSubmit}    
+>>>>>>> 902cdd64ef66dbe7f45b2e11d893a2180b2f1858
           >
             Create Tender
           </button>
