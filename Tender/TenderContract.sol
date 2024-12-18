@@ -259,6 +259,8 @@ contract TenderContract {
         Tender storage tender = tenders[tenderId];
 
         // On the front-end, users are only given the option to choose bids that belong to them
+        require(msg.value != bids[tenderId][msg.sender].amount, "Your revised bid cannot be the same as your original bid.");
+        require(msg.value !< bids[tenderId][msg.sender].amount, "Your revised bid cannot be lower than your original bid.");
         require(bids[tenderId][msg.sender].exists, "No bid placed yet.");
         require(block.timestamp <= tender.endTime, "Bidding time is over.");
 
