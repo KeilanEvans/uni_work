@@ -33,6 +33,7 @@ contract TenderContract {
     event BidPlaced(uint256 tenderId, uint256 value);
     event VoteSubmitted(uint256 tenderId, address voter);
     event RegistrationStatusChaged(address user, bool registrationStatus);
+    event BidRefunded(uint256 tenderId, address bidder, uint256 amount);
 
     // Global variables
     address public owner;                   // Address of the contract owner
@@ -41,6 +42,7 @@ contract TenderContract {
     address[] private registeredUsers;      // Holds array of registered user addresses
 
     // Mappings for lookups
+    mapping(uint256 => address[]) private biddersPerTender;     // Mapping to keep track of all the bidders of a given Tender ID
     mapping(string => bool[4]) private permissions;             // Mapping to store permission profiles 
     mapping(address => bool[4]) private userRegistry;           // Mapping to store registered users permissions
     mapping(address => bool) private isRegistered;              // Mapping that holds register status for a user
@@ -110,6 +112,25 @@ contract TenderContract {
         _;
     }
 
+    // Modifier to check if a tender with the same creator, end time, title and description exists
+    modifier uniqueTender(address creator, uint256 endTime, string memory title, string memory description) {
+        for (uint256 i = 0; i < tenders.length; i++) {
+            Tender storage existingTender = tenders[i];
+
+            // We need to check against a literal comparison of data
+            //      If these attributes are identical, we will consider the tender to already be existing
+            require(
+                existingTender.isOpen &&
+                keccak256(bytes(existingTender.title)) != keccak256(bytes(title)) && 
+                existingTender.endTime != endTime && 
+                existingTender.creator != creator &&
+                keccak256(bytes(existingTender.description)) != keccak256(bytes(description)),
+                "Tender with identical details already exists."
+            );
+        }
+        _;
+    }
+
     /*  Defining Constructor  */
     
     // Constructor to initialize the contract owner
@@ -170,7 +191,7 @@ contract TenderContract {
         uint256 bounty, 
         uint256 minBid, 
         string memory description) 
-        external payable onlyRegisteredCreator {
+        external payable uniqueTender(msg.sender, endTime, title, description) onlyRegisteredCreator {
 
         // Handle poor information parsed to contract
         require(startTime < endTime, "Start time must be earlier than end time.");
@@ -218,7 +239,8 @@ contract TenderContract {
 
         tender.highestBid = msg.value;
         tender.highestBidder = msg.sender;
-        
+
+        biddersPerTender[tenderId].push(msg.sender);
         bidCountPerTender[tenderId] += 1;
 
         emit BidPlaced(tenderId, msg.value);
@@ -271,15 +293,17 @@ contract TenderContract {
     //      This is done to only allow certified nodes like our locally run node to close tenders
     function closeTender(uint256 tenderId) external onlyRegisteredAdmin tenderClosed(tenderId) {
         Tender storage tender = tenders[tenderId];
+
         require(tender.isOpen, "Tender Already closed.");
         tender.isOpen = false;
         
         address winner = tender.highestBidder;
         uint256 winningBid = tender.highestBid;
+        uint256 minimumBid = tender.minimumBid;
         uint256 bounty = tender.bounty;
 
         // The creator (Government, Local Council, Contractor) receives the highest bid
-        if (winner != address(0) && winningBid > 0) {
+        if (winner != address(0) && winningBid > minimumBid) {
             payable(tender.creator).transfer(winningBid);
         }
 
@@ -293,9 +317,51 @@ contract TenderContract {
             payable(tender.creator).transfer(bounty);
         }
 
+        // Refund all losing bidders
+        address[] storage bidders = biddersPerTender[tenderId];
+
+        for (uint256 i = 0; i < bidders.length; i++) {
+            address bidder = bidders[i];
+
+            if (bidder != winner && bids[tenderId][bidder].exists) {
+                uint256 refundAmount = bids[tenderId][bidder].amount;
+
+                bids[tenderId][bidder].exists = false;
+                payable(bidder).transfer(refundAmount);
+                
+                emit BidRefunded(tenderId, bidder, refundAmount);
+            }
+        }
+
         // It is safe to assume that if no bids were made, the winning bid = 0 so no need to account for that
 
         emit TenderClosed(tenderId, winner, winningBid, bounty);
+    }
+
+    // Function to kill an open tender, forcing it closed and refunding bids and bounty
+    //      This allows for the deletion of accidentally created tenders
+    function killTender(uint256 tenderId) external payable onlyRegisteredAdmin tenderOpen(tenderId) {
+        require(tenderId < tenders.length, "Tender ID is out of bounds for length of array tenders");
+        Tender storage tender = tenders[tenderId];
+
+        // return bounty to creator
+        payable(tender.creator).transfer(tender.bounty);
+
+        // return bids to bidders
+        address[] storage bidders = biddersPerTender[tenderId];
+        for (uint256 i = 0; i < bidders.length; i++) {
+            address bidder = bidders[i];
+
+            if (bids[tenderId][bidder].exists) {
+                uint256 refundAmount = bids[tenderId][bidder].amount;
+
+                payable(bidder).transfer(refundAmount);
+
+                emit BidRefunded(tenderId, bidder, refundAmount);
+            }
+        }
+
+        tender.isOpen = false;
     }
 
     // Function to return the total number of tenders.
