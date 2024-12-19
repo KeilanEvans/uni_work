@@ -16,5 +16,11 @@
     "password": "$2b$10$k01RcJMXqKssh/lU.Yz1V.3E6sIR170FSbAkiXtNbTh6.tQicvj3.",
     "address": "0xc9fdbe9a792C8FAfbc652032c145a6F78D299E3C",
     "permission": "admin"
+  },
+  {
+    "username": "Cardiff Council",
+    "password": "$2b$10$eGFIquSYJDUqwZUK1yycLOSgIREjjAtMukCiWY9FPFFTamIywJKK.",
+    "address": "0x6D290e655C90e4923440FcF3e8209A6afC0E7E81",
+    "permission": "creator"
   }
 ]

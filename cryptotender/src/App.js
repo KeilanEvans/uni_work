@@ -223,9 +223,9 @@ function App() {
                 </tr>
               ) : tenders.length > 0 ? (
                 tenders.map((tender, index) => {
-                  const ethBounty = fromWei(tender.bounty.toString());
+                  const ethBounty = (parseFloat(fromWei(tender.bounty.toString())) * 1000000).toString();
                   const gbpBounty = convertToGbp(ethBounty);
-                  const ethValue = fromWei(tender.highestBid.toString());
+                  const ethValue = (parseFloat(fromWei(tender.highestBid.toString())) * 1000000).toString();
                   const gbpValue = convertToGbp(ethValue);
                   const openStatus = calculateOpenStatus(tender.endTime);
                   const timeLeft = calculateTimeLeftStr(tender.endTime);

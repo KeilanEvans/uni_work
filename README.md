@@ -1,77 +1,41 @@
-# CryptoTender
+# Welsh Government Tender Application
 
-CryptoTender is an Ethereum-based platform for voting and bidding on Council run contracts. This README will guide you through setting up the project, installing dependencies, and running the application.
+## Introduction
 
-## Prerequisites
+This project aims to create a way for Local Councils within Wales, as well as the Welsh Government, to create a transparent way for their proposed projects to be voted on by elected officials and bid on by potential contractors.
 
-Before you begin, ensure you have the following installed on your machine:
+The overarching idea is that the app will allow the public to see what is going on near them. How much money is being spent and on what projects. It would allow them to see what their elected officials are voting for and brings responsibility, traceability and transparency to a system that the public can feel so divorced from. 
 
-- [Node.js](https://nodejs.org/) (version 14 or higher)
-- [npm](https://www.npmjs.com/) (Node Package Manager)
+## Notes
 
-## Getting Started
+### Set-up Information
 
-### 1. Clone the Repository
+We have provided a zipped file which contains the project's documents for your ease, including .env files for handling some more sensitive values.
 
-Clone the repository to your local machine using the following command:
+If you would prefer, you can clone the repo for the code which is described in the SETUP_README.md file in this Zip.
 
-```sh
-git clone https://github.com/KeilanEvans/uni_work.git
-```
+If you do clone the repository, you will need to create these .env files yourself and fill specific variables with specific values which are described in the setup readme.
 
-## Adding MetaMask to Chrome
+We utilise a Node.js server to act as a middle-man between the contract and the front-end. 
 
-### 1. Install MetaMask
+We utilise a Create React App development server for handling the front-end, the use of which is described in the setup readme.
 
-Go to the MetaMask website and click on "Download".
-Follow the instructions to add the MetaMask extension to your Chrome browser.
+The react app routes to http://localhost:3000 but gets proxied by the node server to localhost:5000.
 
-### 2. Set Up MetaMask
+If you aren't running these two aspects, the website will be non-functioning.
 
-Open the MetaMask extension by clicking on the MetaMask icon in the Chrome toolbar.
-Follow the instructions to create a new wallet or import an existing one.
+### MetaMask
 
-### 3. Import an Ethereum Address
+We are only accepting MetaMask as an injector/provider. We have allowed for you to switch MetaMask wallets while accessing the front-end and the front-end will switch to whatever is the current wallet.
 
-If you already have an Ethereum address, you can import it into MetaMask.
-Click on the account icon in the top right corner of MetaMask and select "Import Account".
-Enter your private key from the private_key.txt file in the zip file
+Bear in mind that if you were to fulfill Admin actions, you need to be connected on MetaMask with a wallet already approved as an Admin. Even registering an account requires Admin priveliges.
 
-## Add Environment Variables
+To resolve this, we have provided the private key to a throw-away wallet with some Sepolia Eth to the .env files for you to import into your MetaMask account so that you can always have access to an Admin account.
 
-### 1. Create .env File
+You can register new accounts, but there are some front-end/back-end inconsistencies for non-admin users, as the project was developed with the focus on admin accounts in mind.
 
-In the server folder, create a file called .env and populate it with the contents in the environment.txt folder from the zip file
+The inconsistencies for non-admin accounts mostly consist of the front-end allowing you to do actions which non-admin roles may not have permissions to fulfill. This will allow you to send a high-gas transaction to the contract which will get rejected on a permissions basis.
 
-## Set up React Application
+### General
 
-### 1. Navigate to Application Directory
-
-To setup and connect to the React application, run the following 3 commands:
-
-```sh
-cd cryptotender
-npm install
-npm start
-```
-
-## Setup Node.js
-
-### 1. Navigate to Server Directory
-
-To setup and connect to the Node.js server, run the following 3 commands:
-
-```sh
-cd server
-npm install
-node server.js
-```
-
-## Login Details
-
-The login details needed to test the application are stored in the login_details.txt file in the zip file.
-
-
-
-
-
+Ideally, this project would be dealing with the millions of £ GBP worth of ETH but given our development and faucet constraints, we couldn't create tenders to represent this large of a value. We have, however, multiplied the displayed values of the table by 1 million to give the sense of impact we intend to be represented by a realistic deployment of our idea.
