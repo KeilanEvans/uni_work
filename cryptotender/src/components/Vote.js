@@ -9,15 +9,15 @@ const Vote = ({ tenders, handleVote, setCurrentPage, setIsLoggedIn }) => {
   }, [tenders]);
 
   const handleSubmit = () => {
-    const vote = selectRef.current.value;
-    console.log("Selected vote:", vote); // Debugging statement
+    const tenderId = parseInt(selectRef.current.value);
+    console.log("Selected vote:", tenderId); // Debugging statement
 
-    if (!vote) {
+    if (!tenderId) {
       alert("Please select a tender to vote on!");
       return;
     }
 
-    handleVote(vote);
+    handleVote(tenderId);
     setCurrentPage('home');
     setIsLoggedIn(true);
   };

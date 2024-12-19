@@ -167,7 +167,7 @@ function App() {
       {currentPage === 'vote' && (
         <Vote
           tenders={tenders}
-          handleVote={(tenderId) => onVote(setTenders, contract, account, tenderId)}
+          handleVote={(tenderId) => onVote(contract, account, tenderId)}
           setCurrentPage={setCurrentPage}
           setIsLoggedIn={setIsLoggedIn}
         />
