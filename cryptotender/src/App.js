@@ -142,7 +142,7 @@ function App() {
         <EditBid
           bids={bids}
           tenders={tenders}
-          handleEditBid={(tenderId, newBidAmount) => handleEditBid(setTenders, contract, account, web3, tenderId, newBidAmount)}
+          handleEditBid={(tenderId, newBidAmount) => handleEditBid(contract, account, web3, tenderId, newBidAmount)}
           setCurrentPage={setCurrentPage}
           setIsLoggedIn={setIsLoggedIn}
           web3={web3}
@@ -159,7 +159,7 @@ function App() {
         <PlaceBid
           tenders={tenders}
           web3={web3}
-          handlePlaceBid={(tenderId, bidAmount) => handlePlaceBid(setTenders, contract, account, web3, tenderId, bidAmount)}
+          handlePlaceBid={(tenderId, bidAmount) => handlePlaceBid(contract, account, web3, tenderId, bidAmount)}
           setCurrentPage={setCurrentPage}
           setIsLoggedIn={setIsLoggedIn}
         />
