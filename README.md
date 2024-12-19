@@ -41,7 +41,7 @@ Enter your private key from the private_key.txt file in the zip file
 
 ### 1. Create .env File
 
-In the server folder, create a file called .env and populate it with the contents in the environment.txt folder from the zip file
+In the server folder, if there isn't already a .env file, create a file called .env and populate it with the contents in the environment.txt folder from the zip file
 
 ## Set up React Application
 
