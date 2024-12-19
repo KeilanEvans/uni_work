@@ -49,6 +49,7 @@ contract TenderContract {
     mapping(uint256 => mapping(address => Bid)) private bids;   // Mapping from tender ID to bids by address
     mapping(uint256 => mapping(address => bool)) public votes;  // Mapping from tender ID to votes by address
     mapping(uint256 => uint256) public bidCountPerTender;       // Keep track of number of bids for each tender
+    mapping(bytes32 => bool) private uniqueTenderHashes;        // Keep track of unique tenders;
 
     /*  Defining Modifiers  */
 
@@ -107,22 +108,9 @@ contract TenderContract {
     }
 
     // Modifier to check if a tender with the same creator, end time, title and description exists
-    modifier uniqueTender(address creator, uint256 endTime, string memory title, string memory description) {
-        for (uint256 i = 0; i < tenders.length; i++) {
-            Tender storage existingTender = tenders[i];
-
-            // Check if any of the fields are identical
-            // If these attributes of a Tender match, we consider the Tender to already exist
-            if (
-                existingTender.isOpen &&
-                keccak256(bytes(existingTender.title)) == keccak256(bytes(title)) && // Title matches
-                existingTender.endTime == endTime && // End time matches
-                existingTender.creator == creator && // Creator matches
-                keccak256(bytes(existingTender.description)) == keccak256(bytes(description)) // Description matches
-            ) {
-                revert("Tender with identical details already exists.");
-            }
-        }
+    modifier uniqueTender(address creator, uint256 bounty, uint256 endTime, string memory title, string memory description) {
+        bytes32 tenderHash = keccak256(abi.encodePacked(creator, bounty, endTime, title, description));
+        require(!uniqueTenderHashes[tenderHash], "Tender with identical details already exists.");
         _;
     }
 
@@ -197,7 +185,7 @@ contract TenderContract {
         uint256 bounty, 
         uint256 minBid, 
         string memory description) 
-        external payable uniqueTender(msg.sender, endTime, title, description) onlyRegisteredCreator {
+        external payable uniqueTender(msg.sender, bounty, endTime, title, description) onlyRegisteredCreator {
 
         // Handle poor information parsed to contract
         require(startTime < endTime, "Start time must be earlier than end time.");
