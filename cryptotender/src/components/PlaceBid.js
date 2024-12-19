@@ -4,6 +4,7 @@ import { useError } from '../context/ErrorContext';
 import { useSuccess } from '../context/SuccessContext';
 import handlePlaceBid from '../utils/handlePlaceBid';
 
+// PlaceBid component
 const PlaceBid = ({ tenders, web3, contract, account, setCurrentPage, setIsLoggedIn }) => {
   const { showError } = useError();
   const { showSuccess } = useSuccess();
@@ -17,6 +18,7 @@ const PlaceBid = ({ tenders, web3, contract, account, setCurrentPage, setIsLogge
       }}
     >
       <form className="bid-form" onSubmit={(e) => e.preventDefault()}>
+        {/* Select Tender */}
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
           <select id="bid-tender-id" className="form-input">
@@ -31,10 +33,12 @@ const PlaceBid = ({ tenders, web3, contract, account, setCurrentPage, setIsLogge
             }
           </select>
         </div>
+        {/* Bid Amount */}
         <div className="form-group">
           <label className="form-label">Bid Amount (in ETH):</label>
           <input type="number" id="bid-amount" className="form-input" min="0.01" step="0.01" />
         </div>
+        {/* Form Buttons */}
         <div className="form-buttons">
           <button
             type="button"

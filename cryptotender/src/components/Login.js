@@ -4,7 +4,9 @@ import handleLogin from '../utils/handleLogin';
 import { useError } from '../context/ErrorContext';
 import { useSuccess } from '../context/SuccessContext';
 
+// Login component
 const Login = ({ setCurrentPage, setIsLoggedIn }) => {
+  // State variables for username and password
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { showError } = useError();

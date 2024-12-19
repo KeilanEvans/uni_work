@@ -4,6 +4,7 @@ import { useError } from '../context/ErrorContext';
 import { useSuccess } from '../context/SuccessContext';
 import handleVote from '../utils/handleVote';
 
+// Vote component
 const Vote = ({ tenders, contract, account, setCurrentPage, setIsLoggedIn }) => {
   const selectRef = useRef(null);
   const { showError } = useError();
