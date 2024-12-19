@@ -226,7 +226,9 @@ function App() {
                       <td>{tender.votes.toString()}</td>
                       <td>{ethValue} ETH</td>
                       <td>{formatCurrency(gbpValue)}</td>
-                      <td>{openStatus}</td>
+                      <td className={openStatus === 'Open' ? 'open-status' : 'closed-status'}>
+                      {openStatus}
+                      </td>
                       <td
                         className={
                           timeLeftInt < 3600
