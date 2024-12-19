@@ -32,13 +32,25 @@ const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, 
       return;
     }
 
-    if (newBidAmount <= 0) {
+    const newBidAmountFloat = parseFloat(newBidAmount);
+  
+    if (isNaN(newBidAmountFloat) || newBidAmount <= 0) {
       alert("Bid amount must be greater than 0.");
       return;
     }
+  
+    const existingBidAmountWei = bidData[selectedTenderId].amount;
+    const existingBidAmountEth = parseFloat(web3.utils.fromWei(existingBidAmountWei, "ether"));
+    
+    if (newBidAmountFloat <= existingBidAmountEth) {
+      alert("Your new bid must be higher than your existing bid.");
+      return;
+    }
+
+    const additionalBidAmount = (newBidAmountFloat - existingBidAmountEth).toString();
 
     try {
-      await handleEditBid(selectedTenderId, newBidAmount);
+      await handleEditBid(selectedTenderId, additionalBidAmount);
       alert("Bid updated successfully!");
       setCurrentPage('home');
       setIsLoggedIn(true);
@@ -84,7 +96,7 @@ const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, 
             id="edit-bid-amount"
             className="form-input"
             value={newBidAmount}
-            onChange={(e) => setNewBidAmount(e.target.value)}
+            onChange={(e) => setNewBidAmount(e.target.value.toString())}
             required
             placeholder="e.g. 1.5"
           />

@@ -256,20 +256,20 @@ contract TenderContract {
     // (only registered users with bidding permission can revise bids)
     //      Additionally, bidders can only revise their bid to greater than the reserve (minimum)
     //      This prevents initiating a bid above minimum then revising it below minimum
-    function reviseBid(uint256 tenderId) 
-    external payable onlyRegisteredBidder greaterThanMinimum(tenderId, msg.value) tenderOpen(tenderId) {
+    function reviseBid(uint256 tenderId, uint256 additionalBidAmount) 
+    external payable onlyRegisteredBidder greaterThanMinimum(
+        tenderId, 
+        bids[tenderId][msg.sender].amount + additionalBidAmount) 
+        tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
-        // On the front-end, users are only given the option to choose bids that belong to them
-        require(msg.value != bids[tenderId][msg.sender].amount, "Your revised bid cannot be the same as your original bid.");
-        require(msg.value > bids[tenderId][msg.sender].amount, "Your revised bid cannot be lower than your original bid.");
         require(bids[tenderId][msg.sender].exists, "No bid placed yet.");
         require(block.timestamp <= tender.endTime, "Bidding time is over.");
+        require(msg.value == additionalBidAmount, "Incorrect ETH amount sent.");
 
         Bid storage existingBid = bids[tenderId][msg.sender];
-        
-        // Refund the old bid
-        payable(msg.sender).transfer(existingBid.amount);
+        uint256 newTotalBid = existingBid.amount + additionalBidAmount;
+        require(newTotalBid > existingBid.amount, "Your revised bid must be higher than your previous bid.");
 
         existingBid.amount = msg.value;
 
