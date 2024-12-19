@@ -11,9 +11,6 @@ import PlaceBid from './components/PlaceBid';
 import Vote from './components/Vote';
 import Register from './components/Register';
 import Login from './components/Login';
-import handleCreateTender from './utils/handleCreateTender';
-import handleEditBid from './utils/handleEditBid';
-import handlePlaceBid from './utils/handlePlaceBid';
 import handleVote from './utils/handleVote';
 import calculateOpenStatus from './utils/calculateOpenStatus';
 import calculateTimeLeftStr from './utils/calculateTimeLeftStr';
@@ -30,8 +27,8 @@ import {
  } from './utils/web3Utils';
 
 function App() {
+  // State variables
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [clickedRow, setClickedRow] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
   const [tenders, setTenders] = useState([]);
   const [contract, setContract] = useState(null);
@@ -43,6 +40,7 @@ function App() {
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [ethGbpRate, setEthGbpRate] = useState(null);
 
+  // Fetch ETH to GBP rate when component mounts
   useEffect(() => {
     const fetchRate = async () => {
       const rate = await getEthToGbpRate();
@@ -51,6 +49,7 @@ function App() {
     fetchRate();
   }, []);
 
+  // Initialize web3 when component mounts
   useEffect(() => {
     const initializeWeb3 = async () => {
       await initWeb3(setWeb3, setAccount, setContract, setLoading, setTenders, setBids);
@@ -58,6 +57,7 @@ function App() {
     initializeWeb3();
   }, []);
 
+  // Fetch bids when contract and account are available
   useEffect(() => {
     const fetchData = async () => {
       if (contract && account) {
@@ -68,6 +68,7 @@ function App() {
     fetchData();
   }, [currentPage, contract, account])
 
+  // Check for token in local storage and initialize web3
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -77,12 +78,14 @@ function App() {
     connectWallet();
   }, []);
 
+  // Fetch tenders when contract is available
   useEffect(() => {
     if (contract) {
       getTenders(contract, setLoading, setTenders);
     }
   }, [contract]);
 
+  // Update current time every second
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
@@ -90,22 +93,27 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // Handle vote submission
   const onVote = async (contract, account, tenderId) => {
     try {
       await handleVote(contract, account, tenderId);
       await getTenders(contract, setLoading, setTenders);
     } catch (error) {
+      // Handle error
     }
-  }
+  };
 
+  // Convert ETH value to GBP
   const convertToGbp = (ethValue) => {
     return ethGbpRate ? (parseFloat(ethValue) * ethGbpRate).toFixed(2) : "Loading...";
-  }
+  };
 
+  // Handle form close
   const handleFormClose = () => {
     setShowForm(null);
   };
 
+  // Format currency value
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -113,8 +121,9 @@ function App() {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);
-  }
-    
+  };
+
+  // Handle logout click
   const handleLogoutClick = () => {
     handleLogout(setIsLoggedIn);
     localStorage.removeItem('token');
