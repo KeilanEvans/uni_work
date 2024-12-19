@@ -206,6 +206,8 @@ function App() {
               <tr>
                 <th>Tender ID</th>
                 <th>Name</th>
+                <th>Bounty (ETH)</th>
+                <th>Bounty (£ GBP)</th>
                 <th>Description</th>
                 <th>Votes</th>
                 <th>Highest Bid (ETH)</th>
@@ -217,10 +219,12 @@ function App() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="8">Loading...</td>
+                  <td colSpan="10">Loading...</td>
                 </tr>
               ) : tenders.length > 0 ? (
                 tenders.map((tender, index) => {
+                  const ethBounty = fromWei(tender.bounty.toString());
+                  const gbpBounty = convertToGbp(ethBounty);
                   const ethValue = fromWei(tender.highestBid.toString());
                   const gbpValue = convertToGbp(ethValue);
                   const openStatus = calculateOpenStatus(tender.endTime);
@@ -231,6 +235,8 @@ function App() {
                     <tr key={tender.id.toString()}>
                       <td>{tender.id.toString()}</td>
                       <td>{tender.title}</td>
+                      <td>{ethBounty}</td>
+                      <td>{formatCurrency(gbpBounty)}</td>
                       <td>{tender.description || 'N/A'}</td>
                       <td>{tender.votes.toString()}</td>
                       <td>{ethValue} ETH</td>
