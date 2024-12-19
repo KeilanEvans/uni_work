@@ -1,32 +1,20 @@
 [
   {
-    "username": "Keilan",
-    "password": "$2b$10$PmX1sPyGdeUC1YfwcwjdZuw8485Y1x6P41iz3cQxksOE6/tVgyjLy",
-    "address": "0xc9fdbe9a792C8FAfbc652032c145a6F78D299E3C",
-    "permission": "admin"
-  },
-  {
-    "username": "blyddwyn",
-    "password": "$2b$10$XaZ23JFtwWPPYwIxDECFouksvdCQ0xJe.wjZ9rinLIWzleTtwIz3O",
-    "address": "0x3f411bF2C39C1342230B6317f0f9E20BbCB4b174",
-    "permission": "admin"
-  },
-  {
-    "username": "Alex",
-    "password": "$2b$10$WszzPQ1No0Vln0eKAH151u42qrP0zmpCOmHnwrH/z/hAFVevVpLAG",
-    "address": "0x97d4FD146db534812f6cD23F849D24Aa4BABFf46",
-    "permission": "admin"
-  },
-  {
-    "username": "Thomas",
-    "password": "$2b$10$wBdn6z4/V7W9q5YXZsCWSusRLxcDwTMAwIWiMJaajhSrTZObcKyLC",
-    "address": "0x97d4FD146db534812f6cD23F849D24Aa4BABFf46",
-    "permission": "admin"
-  },
-  {
     "username": "alex",
     "password": "$2b$10$Up/YYNg3Cfp7vbBQyct1geVW65jHsVvMTGq6.CBIjssCFdOkeiLjS",
     "address": "0x9449A7403e5e9E9b086a65E8cEDf6739669Cc55a",
+    "permission": "admin"
+  },
+  {
+    "username": "account1",
+    "password": "$2b$10$9LDYEfQ/WZYfDRf6a//MResYAoR9vMrQhovP21FC/AUDbXe.GSkJq",
+    "address": "0x97d4FD146db534812f6cD23F849D24Aa4BABFf46",
+    "permission": "admin"
+  },
+  {
+    "username": "keilan",
+    "password": "$2b$10$k01RcJMXqKssh/lU.Yz1V.3E6sIR170FSbAkiXtNbTh6.tQicvj3.",
+    "address": "0xc9fdbe9a792C8FAfbc652032c145a6F78D299E3C",
     "permission": "admin"
   }
 ]

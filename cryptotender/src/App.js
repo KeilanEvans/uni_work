@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { ErrorProvider } from './context/ErrorContext';
+import { SuccessProvider } from './context/SuccessContext';
+import ErrorPopup from './components/ErrorPopup';
+import SuccessPopup from './components/SuccessPopup';
 import './App.css';
 import logo from './Welsh_Government_logo.svg';
 import EditBid from './components/EditBids';
@@ -7,11 +11,7 @@ import PlaceBid from './components/PlaceBid';
 import Vote from './components/Vote';
 import Register from './components/Register';
 import Login from './components/Login';
-import handleCreateTender from './utils/handleCreateTender';
-import handleEditBid from './utils/handleEditBid';
-import handlePlaceBid from './utils/handlePlaceBid';
 import handleVote from './utils/handleVote';
-import handleRowClick from './utils/handleRowClick';
 import calculateOpenStatus from './utils/calculateOpenStatus';
 import calculateTimeLeftStr from './utils/calculateTimeLeftStr';
 import calculateTimeLeftInt from './utils/calculateTimeLeftInt';
@@ -27,8 +27,8 @@ import {
  } from './utils/web3Utils';
 
 function App() {
+  // State variables
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [clickedRow, setClickedRow] = useState(null);
   const [currentPage, setCurrentPage] = useState('home');
   const [tenders, setTenders] = useState([]);
   const [contract, setContract] = useState(null);
@@ -40,6 +40,7 @@ function App() {
   const [currentTime, setCurrentTime] = useState(Date.now());
   const [ethGbpRate, setEthGbpRate] = useState(null);
 
+  // Fetch ETH to GBP rate when component mounts
   useEffect(() => {
     const fetchRate = async () => {
       const rate = await getEthToGbpRate();
@@ -48,6 +49,15 @@ function App() {
     fetchRate();
   }, []);
 
+  // Initialize web3 when component mounts
+  useEffect(() => {
+    const initializeWeb3 = async () => {
+      await initWeb3(setWeb3, setAccount, setContract, setLoading, setTenders, setBids);
+    };
+    initializeWeb3();
+  }, []);
+
+  // Fetch bids when contract and account are available
   useEffect(() => {
     const fetchData = async () => {
       if (contract && account) {
@@ -56,8 +66,9 @@ function App() {
       }
     };
     fetchData();
-  }, [contract, account])
+  }, [currentPage, contract, account])
 
+  // Check for token in local storage and initialize web3
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -67,12 +78,14 @@ function App() {
     connectWallet();
   }, []);
 
+  // Fetch tenders when contract is available
   useEffect(() => {
     if (contract) {
       getTenders(contract, setLoading, setTenders);
     }
   }, [contract]);
 
+  // Update current time every second
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
@@ -80,23 +93,27 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // Handle vote submission
   const onVote = async (contract, account, tenderId) => {
     try {
       await handleVote(contract, account, tenderId);
       await getTenders(contract, setLoading, setTenders);
     } catch (error) {
-      console.error("Error voting:", error.message || error.toString());
+      // Handle error
     }
-  }
+  };
 
+  // Convert ETH value to GBP
   const convertToGbp = (ethValue) => {
     return ethGbpRate ? (parseFloat(ethValue) * ethGbpRate).toFixed(2) : "Loading...";
-  }
+  };
 
+  // Handle form close
   const handleFormClose = () => {
     setShowForm(null);
   };
 
+  // Format currency value
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -104,8 +121,9 @@ function App() {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(value);
-  }
-    
+  };
+
+  // Handle logout click
   const handleLogoutClick = () => {
     handleLogout(setIsLoggedIn);
     localStorage.removeItem('token');
@@ -113,126 +131,136 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <img src={logo} className="App-logo" alt="logo" />
-      <header className="App-header">
-        <p>Welcome to the Welsh Government Community Voting initiative!</p>
-        {isLoggedIn ? (
-          <ul className="button-list">
-            <li><button className="button" onClick={() => setCurrentPage('create-tender')}>Create Tender</button></li>
-            <li><button className="button" onClick={() => setCurrentPage('vote')}>Vote</button></li>
-            <li><button className="button" onClick={() => setCurrentPage('bids')}>Bids</button></li>
-            <li><button className="button" onClick={() => setCurrentPage('edit-bid')}>Edit Bids</button></li>
-            <li><button className="button" onClick={handleLogoutClick}>Log Out</button></li>
-          </ul>
-        ) : (
-          <ul className="button-list">
-            <li><button className="button" onClick={() => setShowForm('register')}>Register</button></li>
-            <li><button className="button" onClick={() => setShowForm('login')}>Log In</button></li>
-          </ul>
-        )}
-      </header>
-      {showForm === 'register' && !isLoggedIn && (
-        <Register setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
-      )}
-      {showForm === 'login' && !isLoggedIn && (
-        <Login setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
-      )}
-      {currentPage === 'edit-bid' && (
-        <EditBid
-          bids={bids}
-          tenders={tenders}
-          handleEditBid={(tenderId, newBidAmount) => handleEditBid(contract, account, web3, tenderId, newBidAmount)}
-          setCurrentPage={setCurrentPage}
-          setIsLoggedIn={setIsLoggedIn}
-          web3={web3}
-        />
-      )}
-      {currentPage === 'create-tender' && (
-        <CreateTender
-          handleCreateTender={(title, description, endDate, endTime) => handleCreateTender(contract, account, setTenders, title, description, endDate, endTime)}
-          setCurrentPage={setCurrentPage}
-          setIsLoggedIn={setIsLoggedIn}
-        />
-      )}
-      {currentPage === 'bids' && (
-        <PlaceBid
-          tenders={tenders}
-          web3={web3}
-          handlePlaceBid={(tenderId, bidAmount) => handlePlaceBid(contract, account, web3, tenderId, bidAmount)}
-          setCurrentPage={setCurrentPage}
-          setIsLoggedIn={setIsLoggedIn}
-        />
-      )}
-      {currentPage === 'vote' && (
-        <Vote
-          tenders={tenders}
-          handleVote={(tenderId) => onVote(contract, account, tenderId)}
-          setCurrentPage={setCurrentPage}
-          setIsLoggedIn={setIsLoggedIn}
-        />
-      )}
-      <h1 className="current-tenders-title">Current Tenders</h1>
-      <table className="App-table">
-        <thead>
-          <tr>
-            <th>Tender ID</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Votes</th>
-            <th>Highest Bid (ETH)</th>
-            <th>Highest Bid (£ GBP)</th>
-            <th>Open Status</th>
-            <th>Time Left</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan="8">Loading...</td>
-            </tr>
-          ) : tenders.length > 0 ? (
-            tenders.map((tender, index) => {
-              const ethValue = fromWei(tender.highestBid.toString());
-              const gbpValue = convertToGbp(ethValue);
-              const openStatus = calculateOpenStatus(tender.endTime);
-              const timeLeft = calculateTimeLeftStr(tender.endTime);
-              const timeLeftInt = calculateTimeLeftInt(tender.endTime);
-              
-              return (
-                <tr
-                  key={index}
-                  className={clickedRow === tender.id ? 'Clicked-row' : ''}
-                  onClick={() => handleRowClick(tender.id, clickedRow, setClickedRow)}
-                >
-                  <td>{tender.id.toString()}</td>
-                  <td>{tender.title}</td>
-                  <td>{tender.description || 'N/A'}</td>
-                  <td>{tender.votes.toString()}</td>
-                  <td>{ethValue} ETH</td>
-                  <td>{formatCurrency(gbpValue)}</td>
-                  <td>{openStatus}</td>
-                  <td
-                    className={
-                      timeLeftInt < 3600
-                        ? 'Closing-bidding'
-                        : 'Open-bidding'
-                    }
-                  >
-                    {timeLeft}
-                  </td>
-                </tr>
-              );
-            })
-          ) : (
-            <tr>
-              <td colSpan="8">No tenders available</td>
-            </tr>
+    <ErrorProvider>
+      <SuccessProvider>
+        <div className="App">
+          <ErrorPopup />
+          <SuccessPopup />
+          <img src={logo} className="App-logo" alt="logo" />
+          <header className="App-header">
+            <p>Welcome to the Welsh Government Community Voting initiative!</p>
+            {isLoggedIn ? (
+              <ul className="button-list">
+                <li><button className="button" onClick={() => setCurrentPage('create-tender')}>Create Tender</button></li>
+                <li><button className="button" onClick={() => setCurrentPage('vote')}>Vote</button></li>
+                <li><button className="button" onClick={() => setCurrentPage('bids')}>Bids</button></li>
+                <li><button className="button" onClick={() => setCurrentPage('edit-bid')}>Edit Bids</button></li>
+                <li><button className="button" onClick={handleLogoutClick}>Log Out</button></li>
+              </ul>
+            ) : (
+              <ul className="button-list">
+                <li><button className="button" onClick={() => setShowForm('register')}>Register</button></li>
+                <li><button className="button" onClick={() => setShowForm('login')}>Log In</button></li>
+              </ul>
+            )}
+          </header>
+          {showForm === 'register' && !isLoggedIn && (
+            <Register setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
           )}
-        </tbody>
-      </table>
-    </div>
+          {showForm === 'login' && !isLoggedIn && (
+            <Login setIsLoggedIn={(value) => { setIsLoggedIn(value); handleFormClose(); }} setCurrentPage={setCurrentPage} />
+          )}
+          {currentPage === 'edit-bid' && (
+            <EditBid
+              bids={bids}
+              tenders={tenders}
+              contract={contract} // Pass the contract prop
+              account={account}
+              setTenders={setTenders}
+              setCurrentPage={setCurrentPage}
+              setIsLoggedIn={setIsLoggedIn}
+              web3={web3}
+            />
+          )}
+          {currentPage === 'create-tender' && (
+            <CreateTender
+              contract={contract}
+              account={account}
+              setTenders={setTenders}
+              setCurrentPage={setCurrentPage}
+              setIsLoggedIn={setIsLoggedIn}
+            />
+          )}
+          {currentPage === 'bids' && (
+            <PlaceBid
+              tenders={tenders}
+              web3={web3}
+              contract={contract}
+              account={account}
+              setCurrentPage={setCurrentPage}
+              setIsLoggedIn={setIsLoggedIn}
+            />
+          )}
+          {currentPage === 'vote' && (
+            <Vote
+              tenders={tenders}
+              contract={contract}
+              account={account}
+              setCurrentPage={setCurrentPage}
+              setIsLoggedIn={setIsLoggedIn}
+            />
+          )}
+          <h1 className="current-tenders-title">Current Tenders</h1>
+          <table className="App-table">
+            <thead>
+              <tr>
+                <th>Tender ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Votes</th>
+                <th>Highest Bid (ETH)</th>
+                <th>Highest Bid (£ GBP)</th>
+                <th>Open Status</th>
+                <th>Time Left</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="8">Loading...</td>
+                </tr>
+              ) : tenders.length > 0 ? (
+                tenders.map((tender, index) => {
+                  const ethValue = fromWei(tender.highestBid.toString());
+                  const gbpValue = convertToGbp(ethValue);
+                  const openStatus = calculateOpenStatus(tender.endTime);
+                  const timeLeft = calculateTimeLeftStr(tender.endTime);
+                  const timeLeftInt = calculateTimeLeftInt(tender.endTime);
+                  
+                  return (
+                    <tr key={tender.id.toString()}>
+                      <td>{tender.id.toString()}</td>
+                      <td>{tender.title}</td>
+                      <td>{tender.description || 'N/A'}</td>
+                      <td>{tender.votes.toString()}</td>
+                      <td>{ethValue} ETH</td>
+                      <td>{formatCurrency(gbpValue)}</td>
+                      <td className={openStatus === 'Open' ? 'open-status' : 'closed-status'}>
+                      {openStatus}
+                      </td>
+                      <td
+                        className={
+                          timeLeftInt < 3600
+                            ? 'Closing-bidding'
+                            : 'Open-bidding'
+                        }
+                      >
+                        {timeLeft}
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="8">No tenders available</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </SuccessProvider>
+    </ErrorProvider>
   );
- };
+}
 
 export default App;

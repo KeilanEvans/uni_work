@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import FormContainer from './FormContainer';
+import { useError } from '../context/ErrorContext';
+import { useSuccess } from '../context/SuccessContext';
+import handleEditBid from '../utils/handleEditBid';
 
-const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, web3 }) => {
+// EditBid component
+const EditBid = ({ bids, tenders, contract, account, setTenders, setCurrentPage, setIsLoggedIn, web3 }) => {
+  // State variables
   const [selectedTenderId, setSelectedTenderId] = useState('');
   const [newBidAmount, setNewBidAmount] = useState('');
+  const { showError } = useError();
+  const { showSuccess } = useSuccess();
 
   // Convert the dual arrays into an object for easier access
   const [bidData, setBidData] = useState({});
@@ -21,30 +28,37 @@ const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, 
     }
   }, [bids]);
 
-  // Debugging: Log the bidData to ensure it's correctly structured
-  useEffect(() => {
-    console.log("Bid Data:", bidData);
-  }, [bidData]);
-
+  // Handle form submission
   const handleSubmit = async () => {
+    // Validate input fields
     if (!selectedTenderId || !newBidAmount) {
-      alert("All fields are required.");
+      showError("All fields are required.");
       return;
     }
-
-    if (newBidAmount <= 0) {
-      alert("Bid amount must be greater than 0.");
+  
+    const newBidAmountFloat = parseFloat(newBidAmount);
+  
+    if (isNaN(newBidAmountFloat) || newBidAmount <= 0) {
+      showError("Bid amount must be greater than 0.");
       return;
     }
-
+  
+    const existingBidAmountWei = bidData[selectedTenderId].amount;
+    const existingBidAmountEth = parseFloat(web3.utils.fromWei(existingBidAmountWei, "ether"));
+  
+    if (newBidAmountFloat <= existingBidAmountEth) {
+      showError("Your new bid must be higher than your existing bid.");
+      return;
+    }
+  
+    const additionalBidAmount = (newBidAmountFloat - existingBidAmountEth).toString();
+  
     try {
-      await handleEditBid(selectedTenderId, newBidAmount);
-      alert("Bid updated successfully!");
+      await handleEditBid(contract, account, web3, selectedTenderId, additionalBidAmount, showError, showSuccess);
       setCurrentPage('home');
       setIsLoggedIn(true);
     } catch (error) {
-      console.error("Error editing bid:", error);
-      alert("Failed to update bid. Please try again.");
+      showError("Failed to update bid. Please try again.");
     }
   };
 
@@ -84,7 +98,7 @@ const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, 
             id="edit-bid-amount"
             className="form-input"
             value={newBidAmount}
-            onChange={(e) => setNewBidAmount(e.target.value)}
+            onChange={(e) => setNewBidAmount(e.target.value.toString())}
             required
             placeholder="e.g. 1.5"
           />

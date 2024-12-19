@@ -1,14 +1,18 @@
 /* global BigInt */
 
+// Constants for time units in seconds
 const WEEK_SECONDS = BigInt(7 * 24 * 3600);
 const DAY_SECONDS = BigInt(24 * 3600);
 const HOUR_SECONDS = BigInt(3600);
 const MINUTE_SECONDS = BigInt(60);
 
+// Function to calculate the time left until a given end time
 const calculateTimeLeftStr = (endTime) => {
+  // Get the current time in seconds
   const now = BigInt(Math.floor(new Date().getTime() / 1000));
   let timeLeft = endTime - now;
 
+  // If the time left is zero or negative, return 'Voting Ended'
   if (timeLeft <= 0) {
     return 'Voting Ended';
   }
@@ -31,6 +35,7 @@ const calculateTimeLeftStr = (endTime) => {
   // Remaining seconds
   const seconds = timeLeft % MINUTE_SECONDS;
 
+  // Create an array to hold the parts of the time left string
   let parts = [];
   if (weeks > 0n) parts.push(`${weeks} week${weeks > 1n ? 's' : ''}`);
   if (days > 0n) parts.push(`${days} day${days > 1n ? 's' : ''}`);
@@ -43,6 +48,7 @@ const calculateTimeLeftStr = (endTime) => {
     parts.push(`${seconds} sec${seconds > 1n ? 's' : ''}`);
   }
 
+  // Join the parts with commas and return the result
   return parts.join(', ');
 };
 

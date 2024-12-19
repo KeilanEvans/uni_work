@@ -1,37 +1,53 @@
 import Web3 from "web3";
-const web3 = new Web3()
+const web3 = new Web3();
 
-const handleCreateTender = async (contract, account, setTenders, title, description, bounty, minimumBid, endDate, endTime) => {
+const handleCreateTender = async (contract, account, setTenders, title, description, bounty, minimumBid, endDate, endTime, showError, showSuccess) => {
   try {
-    console.log("Creating tender with values:", { title, description, bounty, minimumBid, endDate, endTime });
+    // Check if contract is defined
+    if (!contract) {
+      showError("Contract is not initialized. Please try again later.");
+      return;
+    }
 
-    // Create start time for tender.
+    // Create start time for tender in Unix timestamp
     const startTimeUnix = Math.floor(new Date().getTime() / 1000);
 
-    // Create end time for tender from parsed parameters.
+    // Create end time for tender from parsed parameters in Unix timestamp
     const endDateTimeString = `${endDate}T${endTime}:00`;
     const endTimeUnix = Math.floor(new Date(endDateTimeString).getTime() / 1000);
-
-    console.log("Start time (Unix):", startTimeUnix);
-    console.log("End time (Unix):", endTimeUnix);
 
     // Convert bounty and minimumBid to Wei
     const bountyInWei = web3.utils.toWei(bounty.toString(), 'ether');
     const minimumBidInWei = web3.utils.toWei(minimumBid.toString(), 'ether');
 
-    // Add to Blockchain
+    // Estimate gas required for the transaction
+    const gasEstimate = await contract.methods.createTender(
+      title,
+      startTimeUnix,
+      endTimeUnix,
+      bountyInWei,
+      minimumBidInWei,
+      description
+    ).estimateGas({ from: account, value: bountyInWei });
+
+    // Add the tender to the blockchain
     await contract.methods
       .createTender(title, startTimeUnix, endTimeUnix, bountyInWei, minimumBidInWei, description)
-      .send({ from: account });
+      .send({ 
+        from: account,
+        value: bountyInWei
+       });
 
-    // Now we need to sync our understanding of the tenders on the blockchain
+    // Sync the tenders on the blockchain with the local state
     await contract.methods.getTenders().call().then((loadedTenders) => {
       setTenders(loadedTenders);
     });
 
-    alert("Tender Created Successfully");
+    // Show success message only if no errors occur
+    showSuccess("Tender Created Successfully");
   } catch (error) {
-    console.error("Error creating tender:", error);
+    // Show error message if an error occurs
+    showError(error.message || "Error creating tender");
   }
 };
 

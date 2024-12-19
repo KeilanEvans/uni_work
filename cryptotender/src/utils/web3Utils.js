@@ -4,7 +4,7 @@ import axios from 'axios';
 
 // Web3 contract details
 const CONTRACT_ABI = abi;
-const CONTRACT_ADDRESS = "0x9449A7403e5e9E9b086a65E8cEDf6739669Cc55a";
+const CONTRACT_ADDRESS = "0xfE63f9F2A130D718AeEc36286cc260487DcbE20B";
 
 // State variables
 let isRequestPending = false;
@@ -37,13 +37,18 @@ const setCurrentAccount = (account) => {
   currentAccount = account;
 }
 
+// Setter for contract
 const setInternalContract = (tenderCon) => {
   contract = tenderCon;
 }
 
+// Function to get bids for a specific account
 export const getBids = async (contract, account) => {
   try {
-    const [tenderIds, bidAmounts] = await contract.methods.getBids(account).call();
+    const bidsResult = await contract.methods.getBids(account).call();
+    const tenderIds = bidsResult[0];
+    const bidAmounts = bidsResult[1];
+    
     return { tenderIds, bidAmounts };
   } catch (error) {
     console.error("Error fetching bids:", error);
@@ -51,6 +56,7 @@ export const getBids = async (contract, account) => {
   }
 }
 
+// Function to register a user on the blockchain
 export const registerUserOnBlockchain = async (address, permission) => {
   try {
     if (!contract || !currentAccount) {
@@ -68,6 +74,7 @@ export const registerUserOnBlockchain = async (address, permission) => {
   }
 }
 
+// Function to get all tenders from the contract
 export const getTenders = async (contract, setLoading, setTenders) => {
   if (!contract) {
     console.error("Contract not initialized!");
@@ -87,6 +94,7 @@ export const getTenders = async (contract, setLoading, setTenders) => {
   }
 };
 
+// Function to get the bid amount for a specific tender and account
 export const getBidAmount = async (tenderId, account) => {
   try {
     const amount = await contract.methods.getBidAmount(tenderId, account).call();
@@ -97,6 +105,7 @@ export const getBidAmount = async (tenderId, account) => {
   }
 }
 
+// Function to connect the wallet using MetaMask
 export const connectWallet = async () => {
   // Prevent multiple wallet connection requests
   if (isRequestPending) {
@@ -105,7 +114,7 @@ export const connectWallet = async () => {
   }
 
   try {
-    // Set request pending incase of future requests during unfilled promises
+    // Set request pending in case of future requests during unfilled promises
     isRequestPending = true;
 
     // Check if MetaMask is available
@@ -139,18 +148,18 @@ export const connectWallet = async () => {
   }
 };
 
-// Event listener for changing metamask accounts
+// Event listener for changing MetaMask accounts
 window.ethereum?.on("accountsChanged", (accounts) => {
   if (accounts.length > 0) {
     setCurrentAccount(accounts[0]);
     console.log("Account switched:", currentAccount);
-
   } else {
     console.warn("MetaMask disconnected. No accounts available.");
     setCurrentAccount(null);
   }
 });
 
+// Function to initialize Web3 and set up the contract
 export const initWeb3 = async (setWeb3, setAccount, setContract, setLoading, setTenders, setBids) => {
   try {
     let provider;
@@ -178,7 +187,7 @@ export const initWeb3 = async (setWeb3, setAccount, setContract, setLoading, set
     setContract(tenderContract);
     setInternalContract(tenderContract);
 
-    setCurrentAccount(accounts[0])
+    setCurrentAccount(accounts[0]);
     console.log("Connected to blockchain with account:", getCurrentAccount());
 
     if (!tenderContract) {
@@ -187,11 +196,6 @@ export const initWeb3 = async (setWeb3, setAccount, setContract, setLoading, set
 
     // Load Tenders
     await getTenders(tenderContract, setLoading, setTenders);
-
-    // Load Bids for Current User
-    const userBids = await tenderContract.methods.getBids(accounts[0]).call();
-    setBids(userBids);
-
   } catch (error) {
     console.error("Error connecting to Web3:", error);
   }

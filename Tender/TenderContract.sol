@@ -49,6 +49,7 @@ contract TenderContract {
     mapping(uint256 => mapping(address => Bid)) private bids;   // Mapping from tender ID to bids by address
     mapping(uint256 => mapping(address => bool)) public votes;  // Mapping from tender ID to votes by address
     mapping(uint256 => uint256) public bidCountPerTender;       // Keep track of number of bids for each tender
+    mapping(bytes32 => bool) private uniqueTenderHashes;        // Keep track of unique tenders;
 
     /*  Defining Modifiers  */
 
@@ -73,12 +74,6 @@ contract TenderContract {
     // For allowing only admins to make specific changes
     modifier onlyRegisteredAdmin() {
         require(userRegistry[msg.sender][3], "You are not a registered Admin.");
-        _;
-    }
-
-    // For where actions can be taken by any registered user but not an unregistered user
-    modifier onlyRegisteredUser() {
-        require(isRegistered[msg.sender], "You are not a registered user.");
         _;
     }
 
@@ -113,22 +108,9 @@ contract TenderContract {
     }
 
     // Modifier to check if a tender with the same creator, end time, title and description exists
-    modifier uniqueTender(address creator, uint256 endTime, string memory title, string memory description) {
-        for (uint256 i = 0; i < tenders.length; i++) {
-            Tender storage existingTender = tenders[i];
-
-            // Check if any of the fields are identical
-            // If these attributes of a Tender match, we consider the Tender to already exist
-            if (
-                existingTender.isOpen &&
-                keccak256(bytes(existingTender.title)) == keccak256(bytes(title)) && // Title matches
-                existingTender.endTime == endTime && // End time matches
-                existingTender.creator == creator && // Creator matches
-                keccak256(bytes(existingTender.description)) == keccak256(bytes(description)) // Description matches
-            ) {
-                revert("Tender with identical details already exists.");
-            }
-        }
+    modifier uniqueTender(address creator, uint256 bounty, uint256 endTime, string memory title, string memory description) {
+        bytes32 tenderHash = keccak256(abi.encodePacked(creator, bounty, endTime, title, description));
+        require(!uniqueTenderHashes[tenderHash], "Tender with identical details already exists.");
         _;
     }
 
@@ -203,7 +185,7 @@ contract TenderContract {
         uint256 bounty, 
         uint256 minBid, 
         string memory description) 
-        external payable uniqueTender(msg.sender, endTime, title, description) onlyRegisteredCreator {
+        external payable uniqueTender(msg.sender, bounty, endTime, title, description) onlyRegisteredCreator {
 
         // Handle poor information parsed to contract
         require(startTime < endTime, "Start time must be earlier than end time.");
@@ -262,22 +244,22 @@ contract TenderContract {
     // (only registered users with bidding permission can revise bids)
     //      Additionally, bidders can only revise their bid to greater than the reserve (minimum)
     //      This prevents initiating a bid above minimum then revising it below minimum
-    function reviseBid(uint256 tenderId) 
-    external payable onlyRegisteredBidder greaterThanMinimum(tenderId, msg.value) tenderOpen(tenderId) {
+    function reviseBid(uint256 tenderId, uint256 additionalBidAmount) 
+    external payable onlyRegisteredBidder greaterThanMinimum(
+        tenderId, 
+        bids[tenderId][msg.sender].amount + additionalBidAmount) 
+        tenderOpen(tenderId) {
         Tender storage tender = tenders[tenderId];
 
-        // On the front-end, users are only given the option to choose bids that belong to them
-        require(msg.value != bids[tenderId][msg.sender].amount, "Your revised bid cannot be the same as your original bid.");
-        require(msg.value > bids[tenderId][msg.sender].amount, "Your revised bid cannot be lower than your original bid.");
         require(bids[tenderId][msg.sender].exists, "No bid placed yet.");
         require(block.timestamp <= tender.endTime, "Bidding time is over.");
+        require(msg.value == additionalBidAmount, "Incorrect ETH amount sent.");
 
         Bid storage existingBid = bids[tenderId][msg.sender];
-        
-        // Refund the old bid
-        payable(msg.sender).transfer(existingBid.amount);
+        uint256 newTotalBid = existingBid.amount + additionalBidAmount;
+        require(newTotalBid > existingBid.amount, "Your revised bid must be higher than your previous bid.");
 
-        existingBid.amount = msg.value;
+        existingBid.amount = existingBid.amount + msg.value;
 
         // Update highest bid if necessary
         if (existingBid.amount > tender.highestBid) {
@@ -397,7 +379,7 @@ contract TenderContract {
 
     // Function to get all TenderIDs a user has bid on
     // Returns an array of tenderIDs the user has bid on and an array of their bid amounts
-    function getBids(address account) external view onlyRegisteredUser returns (uint256[] memory, uint256[] memory) {
+    function getBids(address account) external view returns (uint256[] memory, uint256[] memory) {
         uint256 count = 0;
 
         // First get the number of bids the user has made
@@ -433,7 +415,7 @@ contract TenderContract {
     }
 
     // Function to get the details of a tender
-    function getTender(uint256 tenderId) external view onlyRegisteredUser returns (
+    function getTender(uint256 tenderId) external view returns (
         uint256 id, 
         string memory title,
         address creator, 

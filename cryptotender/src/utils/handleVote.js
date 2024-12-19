@@ -1,9 +1,12 @@
-const handleVote = async (contract, account, tenderId) => {
+// Function to handle voting on a tender
+const handleVote = async (contract, account, tenderId, showError, showSuccess) => {
   try {
+    // Send a transaction to vote for the specified tender
     await contract.methods.vote(tenderId).send({ from: account });
-    alert("Vote Submitted Successfully");
+    showSuccess("Vote submitted successfully!");
   } catch (error) {
-    console.error("Error voting:", error);
+    // Show an error message if the voting fails
+    showError(error.message || "Error voting");
   }
 };
 
