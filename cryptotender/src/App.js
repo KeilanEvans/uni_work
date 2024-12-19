@@ -66,7 +66,7 @@ function App() {
       }
     };
     fetchData();
-  }, [contract, account])
+  }, [currentPage, contract, account])
 
   useEffect(() => {
     const token = localStorage.getItem('token');
