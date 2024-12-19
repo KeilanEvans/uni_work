@@ -12,17 +12,31 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
     const endDateTimeString = `${endDate}T${endTime}:00`;
     const endTimeUnix = Math.floor(new Date(endDateTimeString).getTime() / 1000);
 
-    console.log("Start time (Unix):", startTimeUnix);
-    console.log("End time (Unix):", endTimeUnix);
+    console.log("Bounty before converting to wei:", bounty)
 
     // Convert bounty and minimumBid to Wei
     const bountyInWei = web3.utils.toWei(bounty.toString(), 'ether');
     const minimumBidInWei = web3.utils.toWei(minimumBid.toString(), 'ether');
 
+    console.log("Bounty after converting to wei:", bountyInWei)
+
+    const gasEstimate = await contract.methods.createTender(
+      title,
+      startTimeUnix,
+      endTimeUnix,
+      bountyInWei,
+      minimumBidInWei,
+      description
+    ).estimateGas({ from: account, value: bountyInWei });
+    console.log('Estimated Gas:', gasEstimate);
+
     // Add to Blockchain
     await contract.methods
       .createTender(title, startTimeUnix, endTimeUnix, bountyInWei, minimumBidInWei, description)
-      .send({ from: account });
+      .send({ 
+        from: account,
+        value: bountyInWei
+       });
 
     // Now we need to sync our understanding of the tenders on the blockchain
     await contract.methods.getTenders().call().then((loadedTenders) => {

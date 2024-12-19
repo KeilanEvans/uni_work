@@ -24,7 +24,7 @@
     "permission": "admin"
   },
   {
-    "username": "alex",
+    "username": "admin",
     "password": "$2b$10$Up/YYNg3Cfp7vbBQyct1geVW65jHsVvMTGq6.CBIjssCFdOkeiLjS",
     "address": "0x9449A7403e5e9E9b086a65E8cEDf6739669Cc55a",
     "permission": "admin"
