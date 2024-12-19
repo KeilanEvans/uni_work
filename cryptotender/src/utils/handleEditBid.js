@@ -1,4 +1,3 @@
-// Function to handle editing a bid
 const handleEditBid = async (contract, account, web3, tenderId, additionalBidAmount, showError, showSuccess) => {
   try {
     // Send a transaction to revise the bid for the specified tender
@@ -13,14 +12,12 @@ const handleEditBid = async (contract, account, web3, tenderId, additionalBidAmo
       value: additionalBidAmountWei.toString()  // Convert the bid amount to Wei
     });
 
-
     // Fetch the updated list of tenders and update the state
     await contract.methods.reviseBid(tenderId, additionalBidAmountWei).send({
       from: account,
       value: additionalBidAmountWei.toString(),
       gasEstimate: gasEstimate
     });
-
 
     // Show a success alert
     showSuccess("Bid Updated Successfully");

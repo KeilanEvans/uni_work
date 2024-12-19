@@ -14,15 +14,20 @@ const Vote = ({ tenders, contract, account, setCurrentPage, setIsLoggedIn }) => 
     const tenderId = parseInt(selectRef.current.value);
 
     // Validate if a tender is selected
-    if (!tenderId) {
+    if (isNaN(tenderId) || tenderId < 0) {
       showError("Please select a tender to vote on!");
+      return;
+    }
+
+    // Check if contract is defined
+    if (!contract) {
+      showError("Contract is not initialized. Please try again later.");
       return;
     }
 
     try {
       // Attempt to submit the vote
-      await handleVote(contract, account, tenderId, showError);
-      showSuccess("Vote submitted successfully!");
+      await handleVote(contract, account, tenderId, showError, showSuccess);
       setCurrentPage('home');
       setIsLoggedIn(true);
     } catch (error) {

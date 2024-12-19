@@ -32,7 +32,7 @@ const EditBid = ({ bids, tenders, contract, account, setTenders, setCurrentPage,
       showError("All fields are required.");
       return;
     }
-
+  
     const newBidAmountFloat = parseFloat(newBidAmount);
   
     if (isNaN(newBidAmountFloat) || newBidAmount <= 0) {
@@ -42,17 +42,16 @@ const EditBid = ({ bids, tenders, contract, account, setTenders, setCurrentPage,
   
     const existingBidAmountWei = bidData[selectedTenderId].amount;
     const existingBidAmountEth = parseFloat(web3.utils.fromWei(existingBidAmountWei, "ether"));
-    
+  
     if (newBidAmountFloat <= existingBidAmountEth) {
       showError("Your new bid must be higher than your existing bid.");
       return;
     }
-
+  
     const additionalBidAmount = (newBidAmountFloat - existingBidAmountEth).toString();
-
+  
     try {
-      await handleEditBid(selectedTenderId, additionalBidAmount);
-      showError("Bid updated successfully!");
+      await handleEditBid(contract, account, web3, selectedTenderId, additionalBidAmount, showError, showSuccess);
       setCurrentPage('home');
       setIsLoggedIn(true);
     } catch (error) {

@@ -49,6 +49,7 @@ const CreateTender = ({ contract, account, setTenders, setCurrentPage, setIsLogg
   }, [minBid, ethGbpRate]);
 
   const handleSubmit = async () => {
+    console.log("Creating tender...", contract);
     const name = document.getElementById("tender-name").value.trim();
     const description = document.getElementById("tender-description").value.trim();
     const date = document.getElementById("tender-date").value;
@@ -73,8 +74,7 @@ const CreateTender = ({ contract, account, setTenders, setCurrentPage, setIsLogg
     }
 
     try {
-      await handleCreateTender(contract, account, setTenders, name, description, bountyValue, minBidValue, date, time, showError);
-      showSuccess("Tender Created Successfully!");
+      await handleCreateTender(contract, account, setTenders, name, description, bountyValue, minBidValue, date, time, showError, showSuccess);
       setCurrentPage('home');
       setIsLoggedIn(true);
     } catch (error) {

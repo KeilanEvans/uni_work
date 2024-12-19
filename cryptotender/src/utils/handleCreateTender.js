@@ -1,8 +1,13 @@
 import Web3 from "web3";
 const web3 = new Web3();
 
-const handleCreateTender = async (contract, account, setTenders, title, description, bounty, minimumBid, endDate, endTime, showError) => {
+const handleCreateTender = async (contract, account, setTenders, title, description, bounty, minimumBid, endDate, endTime, showError, showSuccess) => {
   try {
+    // Check if contract is defined
+    if (!contract) {
+      showError("Contract is not initialized. Please try again later.");
+      return;
+    }
 
     // Create start time for tender.
     const startTimeUnix = Math.floor(new Date().getTime() / 1000);
@@ -37,7 +42,8 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
       setTenders(loadedTenders);
     });
 
-    alert("Tender Created Successfully");
+    // Show success message only if no errors occur
+    showSuccess("Tender Created Successfully");
   } catch (error) {
     showError(error.message || "Error creating tender");
   }

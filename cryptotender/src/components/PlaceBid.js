@@ -20,10 +20,11 @@ const PlaceBid = ({ tenders, web3, contract, account, setCurrentPage, setIsLogge
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
           <select id="bid-tender-id" className="form-input">
+            <option value="">Select a tender...</option> {/* Default option */}
             {tenders
               .filter((tender) => tender.isOpen) // Only tenders in the bidding phase
               .map((tender, index) => (
-                <option key={index} value={tender.id.toString()}>
+                <option key={tender.id.toString()} value={tender.id.toString()}>
                   {tender.title} - Current Highest Bid: {web3.utils.fromWei(tender.highestBid, "ether")} ETH
                 </option>
               ))
@@ -50,8 +51,7 @@ const PlaceBid = ({ tenders, web3, contract, account, setCurrentPage, setIsLogge
 
               try {
                 // Attempt to place the bid
-                await handlePlaceBid(contract, account, web3, tenderID, bidValue, showError);
-                showSuccess("Bid Placed Successfully!");
+                await handlePlaceBid(contract, account, web3, tenderID, bidValue, showError, showSuccess);
                 setCurrentPage('home');
                 setIsLoggedIn(true);
               } catch (error) {

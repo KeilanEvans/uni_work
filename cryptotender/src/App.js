@@ -52,6 +52,13 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const initializeWeb3 = async () => {
+      await initWeb3(setWeb3, setAccount, setContract, setLoading, setTenders, setBids);
+    };
+    initializeWeb3();
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       if (contract && account) {
         const fetchedBids = await getBids(contract, account);
@@ -148,7 +155,9 @@ function App() {
             <EditBid
               bids={bids}
               tenders={tenders}
-              handleEditBid={(tenderId, newBidAmount) => handleEditBid(contract, account, web3, tenderId, newBidAmount)}
+              contract={contract} // Pass the contract prop
+              account={account}
+              setTenders={setTenders}
               setCurrentPage={setCurrentPage}
               setIsLoggedIn={setIsLoggedIn}
               web3={web3}
@@ -156,7 +165,9 @@ function App() {
           )}
           {currentPage === 'create-tender' && (
             <CreateTender
-              handleCreateTender={(title, description, bounty, minimumBid, endDate, endTime) => handleCreateTender(contract, account, setTenders, title, description, bounty, minimumBid, endDate, endTime)}
+              contract={contract}
+              account={account}
+              setTenders={setTenders}
               setCurrentPage={setCurrentPage}
               setIsLoggedIn={setIsLoggedIn}
             />
@@ -165,7 +176,8 @@ function App() {
             <PlaceBid
               tenders={tenders}
               web3={web3}
-              handlePlaceBid={(tenderId, bidAmount) => handlePlaceBid(contract, account, web3, tenderId, bidAmount)}
+              contract={contract}
+              account={account}
               setCurrentPage={setCurrentPage}
               setIsLoggedIn={setIsLoggedIn}
             />
@@ -173,7 +185,8 @@ function App() {
           {currentPage === 'vote' && (
             <Vote
               tenders={tenders}
-              handleVote={(tenderId) => onVote(contract, account, tenderId)}
+              contract={contract}
+              account={account}
               setCurrentPage={setCurrentPage}
               setIsLoggedIn={setIsLoggedIn}
             />
@@ -206,7 +219,7 @@ function App() {
                   const timeLeftInt = calculateTimeLeftInt(tender.endTime);
                   
                   return (
-                    <tr>
+                    <tr key={tender.id.toString()}>
                       <td>{tender.id.toString()}</td>
                       <td>{tender.title}</td>
                       <td>{tender.description || 'N/A'}</td>
