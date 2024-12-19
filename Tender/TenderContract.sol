@@ -259,7 +259,7 @@ contract TenderContract {
         uint256 newTotalBid = existingBid.amount + additionalBidAmount;
         require(newTotalBid > existingBid.amount, "Your revised bid must be higher than your previous bid.");
 
-        existingBid.amount = msg.value;
+        existingBid.amount = existingBid.amount + msg.value;
 
         // Update highest bid if necessary
         if (existingBid.amount > tender.highestBid) {
