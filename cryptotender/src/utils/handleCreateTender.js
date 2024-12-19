@@ -9,10 +9,10 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
       return;
     }
 
-    // Create start time for tender.
+    // Create start time for tender in Unix timestamp
     const startTimeUnix = Math.floor(new Date().getTime() / 1000);
 
-    // Create end time for tender from parsed parameters.
+    // Create end time for tender from parsed parameters in Unix timestamp
     const endDateTimeString = `${endDate}T${endTime}:00`;
     const endTimeUnix = Math.floor(new Date(endDateTimeString).getTime() / 1000);
 
@@ -20,6 +20,7 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
     const bountyInWei = web3.utils.toWei(bounty.toString(), 'ether');
     const minimumBidInWei = web3.utils.toWei(minimumBid.toString(), 'ether');
 
+    // Estimate gas required for the transaction
     const gasEstimate = await contract.methods.createTender(
       title,
       startTimeUnix,
@@ -29,7 +30,7 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
       description
     ).estimateGas({ from: account, value: bountyInWei });
 
-    // Add to Blockchain
+    // Add the tender to the blockchain
     await contract.methods
       .createTender(title, startTimeUnix, endTimeUnix, bountyInWei, minimumBidInWei, description)
       .send({ 
@@ -37,7 +38,7 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
         value: bountyInWei
        });
 
-    // Now we need to sync our understanding of the tenders on the blockchain
+    // Sync the tenders on the blockchain with the local state
     await contract.methods.getTenders().call().then((loadedTenders) => {
       setTenders(loadedTenders);
     });
@@ -45,6 +46,7 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
     // Show success message only if no errors occur
     showSuccess("Tender Created Successfully");
   } catch (error) {
+    // Show error message if an error occurs
     showError(error.message || "Error creating tender");
   }
 };

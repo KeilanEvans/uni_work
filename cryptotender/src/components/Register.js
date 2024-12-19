@@ -4,7 +4,9 @@ import FormContainer from './FormContainer';
 import { useError } from '../context/ErrorContext';
 import { useSuccess } from '../context/SuccessContext';
 
+// Register component
 const Register = ({ setIsLoggedIn, setCurrentPage }) => {
+  // State variables for form fields
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [address, setAddress] = useState('');

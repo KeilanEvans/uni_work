@@ -5,7 +5,9 @@ import { useError } from '../context/ErrorContext';
 import { useSuccess } from '../context/SuccessContext';
 import handleCreateTender from '../utils/handleCreateTender';
 
+// CreateTender component
 const CreateTender = ({ contract, account, setTenders, setCurrentPage, setIsLoggedIn }) => {
+  // State variables
   const [bounty, setBounty] = useState('');
   const [ethToGbp, setEthToGbp] = useState("0.00");
   const [minBid, setMinBid] = useState('');
@@ -48,6 +50,7 @@ const CreateTender = ({ contract, account, setTenders, setCurrentPage, setIsLogg
     }
   }, [minBid, ethGbpRate]);
 
+  // Handle form submission
   const handleSubmit = async () => {
     console.log("Creating tender...", contract);
     const name = document.getElementById("tender-name").value.trim();

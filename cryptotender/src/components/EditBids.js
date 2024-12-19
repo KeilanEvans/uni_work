@@ -4,7 +4,9 @@ import { useError } from '../context/ErrorContext';
 import { useSuccess } from '../context/SuccessContext';
 import handleEditBid from '../utils/handleEditBid';
 
+// EditBid component
 const EditBid = ({ bids, tenders, contract, account, setTenders, setCurrentPage, setIsLoggedIn, web3 }) => {
+  // State variables
   const [selectedTenderId, setSelectedTenderId] = useState('');
   const [newBidAmount, setNewBidAmount] = useState('');
   const { showError } = useError();
@@ -26,6 +28,7 @@ const EditBid = ({ bids, tenders, contract, account, setTenders, setCurrentPage,
     }
   }, [bids]);
 
+  // Handle form submission
   const handleSubmit = async () => {
     // Validate input fields
     if (!selectedTenderId || !newBidAmount) {
