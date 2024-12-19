@@ -28,41 +28,14 @@ If you aren't running these two aspects, the website will be non-functioning.
 
 We are only accepting MetaMask as an injector/provider. We have allowed for you to switch MetaMask wallets while accessing the front-end and the front-end will switch to whatever is the current wallet.
 
-If you already have an Ethereum address, you can import it into MetaMask.
-Click on the account icon in the top right corner of MetaMask and select "Import Account".
-Enter your private key from the private_key.txt file in the zip file
+Bear in mind that if you were to fulfil Admin actions, you need to be connected on MetaMask with a wallet already approved as an Admin. Even registering an account requires Admin privileges.
 
-## Add Environment Variables
+To resolve this, we have provided the private key to a throw-away wallet with some Sepolia Eth to the .env files for you to import into your MetaMask account so that you can always have access to an Admin account.
 
-### 1. Create .env File
+You can register new accounts, but there are some front-end/back-end inconsistencies for non-admin users, as the project was developed with the focus on admin accounts in mind.
 
-In the server folder, if there isn't already a .env file, create a file called .env and populate it with the contents in the environment.txt folder from the zip file
+The inconsistencies for non-admin accounts mostly consist of the front-end allowing you to do actions which non-admin roles may not have permissions to fulfill. This will allow you to send a high-gas transaction to the contract which will get rejected on a permissions basis.
 
-## Set up React Application
+### General
 
-### 1. Navigate to Application Directory
-
-To setup and connect to the React application, run the following 3 commands:
-
-```sh
-cd cryptotender
-npm install
-npm start
-```
-
-## Setup Node.js
-
-### 1. Navigate to Server Directory
-
-To setup and connect to the Node.js server, run the following 3 commands:
-
-```sh
-cd server
-npm install
-node server.js
-```
-
-## Login Details
-
-The login details needed to test the application are stored in the login_details.txt file in the zip file.
-
+Ideally, this project would be dealing with the millions of £ GBP worth of ETH but given our development and faucet constraints, we couldn't create tenders to represent this large of a value. We have, however, multiplied the displayed values of the table by 1 million to give the sense of impact we intend to be represented by a realistic deployment of our idea.

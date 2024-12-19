@@ -70,8 +70,3 @@ node server.js
 ## Login Details
 
 The login details needed to test the application are stored in the login_details.txt file in the zip file.
-
-
-
-
-
