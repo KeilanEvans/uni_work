@@ -1,26 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import handleLogin from '../utils/handleLogin';
+import React, { useState } from 'react';
 import FormContainer from './FormContainer';
+import handleLogin from '../utils/handleLogin';
+import { useError } from '../context/ErrorContext';
+import { useSuccess } from '../context/SuccessContext';
 
-const Login = ({ setIsLoggedIn, setCurrentPage }) => {
+const Login = ({ setCurrentPage, setIsLoggedIn }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const { showError } = useError();
+  const { showSuccess } = useSuccess();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsLoggedIn(true);
-      setCurrentPage('home');
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      // Attempt to log in the user
+      await handleLogin(username, password, setIsLoggedIn, () => {
+        setCurrentPage('home');
+        showSuccess("Login Successful!");
+      }, showError);
+    } catch (error) {
+      // Show error message if login fails
+      showError(error.message || "Login failed");
     }
-  }, [setIsLoggedIn, setCurrentPage]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevent default form submission
-    if (!username || !password) {
-      alert("All fields are required.");
-      return;
-    }
-    handleLogin(username, password, setIsLoggedIn, () => setCurrentPage('home'));
   };
 
   return (

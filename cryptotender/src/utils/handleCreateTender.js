@@ -1,9 +1,8 @@
 import Web3 from "web3";
-const web3 = new Web3()
+const web3 = new Web3();
 
-const handleCreateTender = async (contract, account, setTenders, title, description, bounty, minimumBid, endDate, endTime) => {
+const handleCreateTender = async (contract, account, setTenders, title, description, bounty, minimumBid, endDate, endTime, showError) => {
   try {
-    console.log("Creating tender with values:", { title, description, bounty, minimumBid, endDate, endTime });
 
     // Create start time for tender.
     const startTimeUnix = Math.floor(new Date().getTime() / 1000);
@@ -12,13 +11,9 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
     const endDateTimeString = `${endDate}T${endTime}:00`;
     const endTimeUnix = Math.floor(new Date(endDateTimeString).getTime() / 1000);
 
-    console.log("Bounty before converting to wei:", bounty)
-
     // Convert bounty and minimumBid to Wei
     const bountyInWei = web3.utils.toWei(bounty.toString(), 'ether');
     const minimumBidInWei = web3.utils.toWei(minimumBid.toString(), 'ether');
-
-    console.log("Bounty after converting to wei:", bountyInWei)
 
     const gasEstimate = await contract.methods.createTender(
       title,
@@ -28,7 +23,6 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
       minimumBidInWei,
       description
     ).estimateGas({ from: account, value: bountyInWei });
-    console.log('Estimated Gas:', gasEstimate);
 
     // Add to Blockchain
     await contract.methods
@@ -45,7 +39,7 @@ const handleCreateTender = async (contract, account, setTenders, title, descript
 
     alert("Tender Created Successfully");
   } catch (error) {
-    console.error("Error creating tender:", error);
+    showError(error.message || "Error creating tender");
   }
 };
 

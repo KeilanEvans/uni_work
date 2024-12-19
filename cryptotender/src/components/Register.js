@@ -1,27 +1,31 @@
 import React, { useState } from 'react';
 import handleRegister from '../utils/handleRegister';
 import FormContainer from './FormContainer';
+import { useError } from '../context/ErrorContext';
+import { useSuccess } from '../context/SuccessContext';
 
 const Register = ({ setIsLoggedIn, setCurrentPage }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [address, setAddress] = useState('');
   const [permission, setPermission] = useState('');
-  const [registrationStatus, setRegistrationStatus] = useState(null); // null, 'success', or 'failed'
+  const { showError } = useError();
+  const { showSuccess } = useSuccess();
 
+  // Handle form submission
   const handleSubmit = async () => {
+    // Validate input fields
     if (!username || !password || !address || !permission) {
-      alert("All fields are required.");
+      showError("All fields are required.");
       return;
-    }
-    console.log("Registering user:", { username, password, address, permission }); // Debugging statement
-    
+    }    
     try {
-      await handleRegister(username, password, address, permission, setIsLoggedIn);
-      setRegistrationStatus('success'); // Set registrationStatus to 'success' after successful registration
+      // Attempt to register the user
+      await handleRegister(username, password, address, permission, setIsLoggedIn, showError);
+      showSuccess("Registration Successful!");
+      setCurrentPage('home');
     } catch (error) {
-      console.error("Registration failed:", error);
-      setRegistrationStatus('failed'); // Set registrationStatus to 'failed' if registration fails
+      showError("Failed to register. Please try again.");
     }
   };
 
@@ -33,11 +37,6 @@ const Register = ({ setIsLoggedIn, setCurrentPage }) => {
         setIsLoggedIn(false);
       }}
     >
-      {registrationStatus === 'success' ? (
-        <h1>Registration Successful!</h1>
-      ) : registrationStatus === 'failed' ? (
-        <h1>Registration Failed!</h1>
-      ) : (
         <form className="register-form" onSubmit={(e) => e.preventDefault()}>
           <div className="form-group">
             <label className="form-label">Username:</label>
@@ -78,6 +77,7 @@ const Register = ({ setIsLoggedIn, setCurrentPage }) => {
               value={permission}
               onChange={(e) => setPermission(e.target.value)}
             >
+              <option value="">Select Permission Level</option>
               <option value="voter">Voter</option>
               <option value="bidder">Contractor</option>
               <option value="creator">Council</option>
@@ -90,7 +90,6 @@ const Register = ({ setIsLoggedIn, setCurrentPage }) => {
             </button>
           </div>
         </form>
-      )}
     </FormContainer>
   );
 };

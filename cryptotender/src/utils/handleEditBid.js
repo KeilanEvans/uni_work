@@ -1,29 +1,32 @@
-const handleEditBid = async (contract, account, web3, tenderId, additionalBidAmount) => {
+// Function to handle editing a bid
+const handleEditBid = async (contract, account, web3, tenderId, additionalBidAmount, showError, showSuccess) => {
   try {
+    // Send a transaction to revise the bid for the specified tender
     if (isNaN(additionalBidAmount) || parseFloat(additionalBidAmount) <= 0) {
       throw new Error("Invalid additional bid amount.");
     }
 
     const additionalBidAmountWei = web3.utils.toWei(additionalBidAmount.toString(), "ether");
 
-    console.log("Additional amount required in wei:", additionalBidAmountWei);
-
     const gasEstimate = await contract.methods.reviseBid(tenderId, additionalBidAmountWei).estimateGas({ 
       from: account, 
-      value: additionalBidAmountWei.toString() 
+      value: additionalBidAmountWei.toString()  // Convert the bid amount to Wei
     });
-    console.log("Gas estimate:", gasEstimate);
 
+
+    // Fetch the updated list of tenders and update the state
     await contract.methods.reviseBid(tenderId, additionalBidAmountWei).send({
       from: account,
       value: additionalBidAmountWei.toString(),
       gasEstimate: gasEstimate
     });
 
-    alert("Bid Updated Successfully");
+
+    // Show a success alert
+    showSuccess("Bid Updated Successfully");
   } catch (error) {
-    console.error("Error editing bid:", error);
-    alert("Failed to update bid. Please try again.");
+    // Show an error message if the bid update fails
+    showError(error.message || "Error editing bid");
   }
 };
 

@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import FormContainer from './FormContainer';
+import { useError } from '../context/ErrorContext';
+import { useSuccess } from '../context/SuccessContext';
+import handleEditBid from '../utils/handleEditBid';
 
-const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, web3 }) => {
+const EditBid = ({ bids, tenders, contract, account, setTenders, setCurrentPage, setIsLoggedIn, web3 }) => {
   const [selectedTenderId, setSelectedTenderId] = useState('');
   const [newBidAmount, setNewBidAmount] = useState('');
+  const { showError } = useError();
+  const { showSuccess } = useSuccess();
 
   // Convert the dual arrays into an object for easier access
   const [bidData, setBidData] = useState({});
@@ -21,21 +26,17 @@ const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, 
     }
   }, [bids]);
 
-  // Debugging: Log the bidData to ensure it's correctly structured
-  useEffect(() => {
-    console.log("Bid Data:", bidData);
-  }, [bidData]);
-
   const handleSubmit = async () => {
+    // Validate input fields
     if (!selectedTenderId || !newBidAmount) {
-      alert("All fields are required.");
+      showError("All fields are required.");
       return;
     }
 
     const newBidAmountFloat = parseFloat(newBidAmount);
   
     if (isNaN(newBidAmountFloat) || newBidAmount <= 0) {
-      alert("Bid amount must be greater than 0.");
+      showError("Bid amount must be greater than 0.");
       return;
     }
   
@@ -43,7 +44,7 @@ const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, 
     const existingBidAmountEth = parseFloat(web3.utils.fromWei(existingBidAmountWei, "ether"));
     
     if (newBidAmountFloat <= existingBidAmountEth) {
-      alert("Your new bid must be higher than your existing bid.");
+      showError("Your new bid must be higher than your existing bid.");
       return;
     }
 
@@ -51,12 +52,11 @@ const EditBid = ({ bids, tenders, handleEditBid, setCurrentPage, setIsLoggedIn, 
 
     try {
       await handleEditBid(selectedTenderId, additionalBidAmount);
-      alert("Bid updated successfully!");
+      showError("Bid updated successfully!");
       setCurrentPage('home');
       setIsLoggedIn(true);
     } catch (error) {
-      console.error("Error editing bid:", error);
-      alert("Failed to update bid. Please try again.");
+      showError("Failed to update bid. Please try again.");
     }
   };
 

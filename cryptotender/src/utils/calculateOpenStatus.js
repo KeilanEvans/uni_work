@@ -1,12 +1,20 @@
 /* global BigInt */
 
+// Function to calculate the open status of a tender based on its end time
 const calculateOpenStatus = (endTime) => {
-    const now = BigInt(Math.floor(new Date().getTime() / 1000));
-    const timeLeft = endTime - now;
-    if (timeLeft > BigInt(0)) {
-      return 'Open';
-    }
-    return 'Closed';
-  };
+  // Get the current time in Unix timestamp as a BigInt
+  const now = BigInt(Math.floor(new Date().getTime() / 1000));
   
-  export default calculateOpenStatus;
+  // Calculate the time left until the tender closes
+  const timeLeft = endTime - now;
+  
+  // If time left is greater than 0, the tender is open
+  if (timeLeft > BigInt(0)) {
+    return 'Open';
+  }
+  
+  // Otherwise, the tender is closed
+  return 'Closed';
+};
+
+export default calculateOpenStatus;
