@@ -1,25 +1,33 @@
 import React, { useRef, useEffect } from 'react';
 import FormContainer from './FormContainer';
+import { useError } from '../context/ErrorContext';
+import { useSuccess } from '../context/SuccessContext';
+import handleVote from '../utils/handleVote';
 
-const Vote = ({ tenders, handleVote, setCurrentPage, setIsLoggedIn }) => {
+const Vote = ({ tenders, contract, account, setCurrentPage, setIsLoggedIn }) => {
   const selectRef = useRef(null);
+  const { showError } = useError();
+  const { showSuccess } = useSuccess();
 
-  useEffect(() => {
-    console.log("Tenders:", tenders); // Debugging statement
-  }, [tenders]);
-
-  const handleSubmit = () => {
+  // Handle form submission
+  const handleSubmit = async () => {
     const tenderId = parseInt(selectRef.current.value);
-    console.log("Selected vote:", tenderId); // Debugging statement
 
+    // Validate if a tender is selected
     if (!tenderId) {
-      alert("Please select a tender to vote on!");
+      showError("Please select a tender to vote on!");
       return;
     }
 
-    handleVote(tenderId);
-    setCurrentPage('home');
-    setIsLoggedIn(true);
+    try {
+      // Attempt to submit the vote
+      await handleVote(contract, account, tenderId, showError);
+      showSuccess("Vote submitted successfully!");
+      setCurrentPage('home');
+      setIsLoggedIn(true);
+    } catch (error) {
+      showError("Failed to submit vote. Please try again.");
+    }
   };
 
   return (
@@ -30,7 +38,7 @@ const Vote = ({ tenders, handleVote, setCurrentPage, setIsLoggedIn }) => {
         setIsLoggedIn(true);
       }}
     >
-      <form className="vote-form">
+      <form className="vote-form" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
           <select id="vote-tender-id" className="form-input" ref={selectRef}>
@@ -62,7 +70,7 @@ const Vote = ({ tenders, handleVote, setCurrentPage, setIsLoggedIn }) => {
           </button>
         </div>
       </form>
-      </FormContainer>
+    </FormContainer>
   );
 };
 

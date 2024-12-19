@@ -1,18 +1,20 @@
-const handlePlaceBid = async (contract, account, web3, tenderId, bidAmount) => {
+// Function to handle placing a bid
+const handlePlaceBid = async (contract, account, web3, tenderId, bidAmount, showError, showSuccess) => {
   try {
+    // Convert the bid amount to Wei
     const bidAmountInWei = web3.utils.toWei(bidAmount, "ether");
-    console.log("Bid value in Wei:", bidAmountInWei);
-    const gasEstimate = await contract.methods.placeBid(tenderId).estimateGas({ from: account, value: bidAmountInWei });
-    console.log("Gas estimate:", gasEstimate);
 
+    // Send a transaction to place the bid for the specified tender
     await contract.methods.placeBid(tenderId).send({
       from: account,
       value: bidAmountInWei,
     });
 
-    alert("Bid Placed Successfully");
+    // Show a success alert
+    showSuccess("Bid Placed Successfully");
   } catch (error) {
-    console.error("Error placing bid:", error);
+    // Show an error message if the bid placement fails
+    showError(error.message || "Error placing bid");
   }
 };
 

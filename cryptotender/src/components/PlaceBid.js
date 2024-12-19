@@ -1,7 +1,13 @@
 import React from 'react';
 import FormContainer from './FormContainer';
+import { useError } from '../context/ErrorContext';
+import { useSuccess } from '../context/SuccessContext';
+import handlePlaceBid from '../utils/handlePlaceBid';
 
-const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn }) => {
+const PlaceBid = ({ tenders, web3, contract, account, setCurrentPage, setIsLoggedIn }) => {
+  const { showError } = useError();
+  const { showSuccess } = useSuccess();
+
   return (
     <FormContainer
       title="Place a Bid"
@@ -10,7 +16,7 @@ const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn
         setIsLoggedIn(true);
       }}
     >
-      <form className="bid-form">
+      <form className="bid-form" onSubmit={(e) => e.preventDefault()}>
         <div className="form-group">
           <label className="form-label">Select Tender:</label>
           <select id="bid-tender-id" className="form-input">
@@ -23,7 +29,6 @@ const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn
               ))
             }
           </select>
-
         </div>
         <div className="form-group">
           <label className="form-label">Bid Amount (in ETH):</label>
@@ -33,20 +38,25 @@ const PlaceBid = ({ tenders, web3, handlePlaceBid, setCurrentPage, setIsLoggedIn
           <button
             type="button"
             className="button create-button"
-            onClick={() => {
+            onClick={async () => {
               const tenderID = document.getElementById("bid-tender-id").value;
               const bidValue = document.getElementById("bid-amount").value;
-
-              console.log("Tenders in PlaceBid.js:", tenders);
               
+              // Validate input fields
               if (!tenderID || !bidValue) {
-                alert("All fields are required.");
+                showError("All fields are required.");
                 return;
               }
 
-              handlePlaceBid(tenderID, bidValue);
-              setCurrentPage('home');
-              setIsLoggedIn(true);
+              try {
+                // Attempt to place the bid
+                await handlePlaceBid(contract, account, web3, tenderID, bidValue, showError);
+                showSuccess("Bid Placed Successfully!");
+                setCurrentPage('home');
+                setIsLoggedIn(true);
+              } catch (error) {
+                showError("Failed to place bid. Please try again.");
+              }
             }}
           >
             Submit Bid

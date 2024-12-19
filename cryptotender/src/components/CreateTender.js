@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { getEthToGbpRate } from '../utils/web3Utils';
 import FormContainer from './FormContainer';
+import { useError } from '../context/ErrorContext';
+import { useSuccess } from '../context/SuccessContext';
+import handleCreateTender from '../utils/handleCreateTender';
 
-const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => {
+const CreateTender = ({ contract, account, setTenders, setCurrentPage, setIsLoggedIn }) => {
   const [bounty, setBounty] = useState('');
   const [ethToGbp, setEthToGbp] = useState("0.00");
   const [minBid, setMinBid] = useState('');
   const [bidEthToGbp, setBidEthToGbp] = useState("0.00");
   const [ethGbpRate, setEthGbpRate] = useState(null);
   const [rateError, setRateError] = useState(null);
+  const { showError } = useError();
+  const { showSuccess } = useSuccess();
 
   // Fetch ETH to GBP rate once when component mounts
   useEffect(() => {
@@ -17,7 +22,6 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
         const rate = await getEthToGbpRate();
         setEthGbpRate(rate);
       } catch (error) {
-        console.error("Error fetching ETH to GBP rate:", error);
         setRateError("Failed to fetch ETH to GBP rate. Please try again later.");
       }
     };
@@ -44,7 +48,7 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
     }
   }, [minBid, ethGbpRate]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const name = document.getElementById("tender-name").value.trim();
     const description = document.getElementById("tender-description").value.trim();
     const date = document.getElementById("tender-date").value;
@@ -54,23 +58,28 @@ const CreateTender = ({ handleCreateTender, setCurrentPage, setIsLoggedIn }) => 
 
     // Validation
     if (!name || !description || !date || !time || !bountyValue || !minBidValue) {
-      alert("All fields are required.");
+      showError("All fields are required.");
       return;
     }
 
     if (bountyValue <= 0 || minBidValue < 0) {
-      alert("Unacceptable values parsed for bounty and minBid. Please enter acceptable values.");
+      showError("Unacceptable values parsed for bounty and minBid. Please enter acceptable values.");
       return;
     }
 
     if (!ethGbpRate) {
-      alert("ETH to GBP rate not available. Please try again later.");
+      showError("ETH to GBP rate not available. Please try again later.");
       return;
     }
 
-    handleCreateTender(name, description, bountyValue, minBidValue, date, time);
-    setCurrentPage('home');
-    setIsLoggedIn(true);
+    try {
+      await handleCreateTender(contract, account, setTenders, name, description, bountyValue, minBidValue, date, time, showError);
+      showSuccess("Tender Created Successfully!");
+      setCurrentPage('home');
+      setIsLoggedIn(true);
+    } catch (error) {
+      showError(error.message);
+    }
   };
 
   return (
