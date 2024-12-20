@@ -26,7 +26,7 @@ If you aren't running these two aspects, the website will be non-functioning.
 
 ### MetaMask
 
-We are only accepting MetaMask as an injector/provider. We have allowed for you to switch MetaMask wallets while accessing the front-end and the front-end will switch to whatever is the current wallet.
+We are only accepting MetaMask as an injector/provider. We have allowed for you to switch MetaMask wallets while accessing the front-end and the front-end will switch to whatever is the current wallet but <b>you will need to refresh the page</b> to get it to work, as the account setting is handled on webpage load and we had too many difficulties getting it to run dynamically.
 
 Bear in mind that if you were to fulfil Admin actions, you need to be connected on MetaMask with a wallet already approved as an Admin. Even registering an account requires Admin privileges.
 
